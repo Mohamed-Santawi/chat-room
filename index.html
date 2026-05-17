@@ -24,6 +24,10 @@
             --text-body: #e8e4dc;
             --text-muted: #a69580;
         }
+        
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
 
         html, body { 
             margin: 0; padding: 0;
@@ -104,10 +108,10 @@
         .clear-chat-btn:hover { background: #a63a3a; box-shadow: 0 0 15px rgba(166, 58, 58, 0.4); }
 
         .chat-input-container { 
-            background: var(--bg-secondary); padding: 12px; flex-shrink: 0; 
+            background: var(--bg-secondary); padding: 10px; flex-shrink: 0; 
             border-top: 1px solid var(--bronze-border);
         }
-        .input-main-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .input-main-row { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
         .input-wrapper { 
             flex-grow: 1; display: flex; align-items: center; 
             background: var(--bg-tertiary); border: 1px solid var(--bronze-border); 
@@ -157,9 +161,10 @@
             0%, 100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
             50% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.7); }
         }
-        .controls-container { display: flex; align-items: center; gap: 8px; z-index: 5; }
+        .controls-container { display: flex; align-items: center; gap: 4px; z-index: 5; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+        .controls-container::-webkit-scrollbar { display: none; }
         .speaker-control, .mic-slot {
-            width: 40px; height: 40px; border-radius: 50%;
+            width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             background: rgba(0, 0, 0, 0.5); border: 1px solid var(--gold-primary);
             transition: all 0.3s ease; position: relative;
