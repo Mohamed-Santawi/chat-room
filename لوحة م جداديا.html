@@ -7,20 +7,24 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         :root {
-            --panel-bg: #EFEFEF;
-            --header-bg: #383838;
-            --input-bg: #FFFFFF;
-            --input-border: #BDBDBD;
-            --text-color: #000000;
-            --label-bg: #7F7F7F;
-            --label-text: #FFFFFF;
-            --btn-green-save: #28A745;
-            --btn-green-extra: #27ae60;
-            --btn-red: #DC3545;
-            --btn-purple: #8e44ad;
-            --btn-white: #FFFFFF;
-            --btn-white-border: #BDBDBD;
-            --btn-blue-announce: #007BFF; 
+            --panel-bg: rgba(18, 14, 10, 0.95);
+            --header-bg: rgba(10, 8, 6, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(212, 175, 55, 0.3);
+            --text-color: #e8e4dc;
+            --label-bg: rgba(212, 175, 55, 0.15);
+            --label-text: #d4af37;
+            
+            --gold-primary: #d4af37;
+            --gold-light: #ffdf7a;
+            
+            --btn-green-save: linear-gradient(135deg, #1b1612, #100b08);
+            --btn-green-extra: linear-gradient(135deg, #1b1612, #100b08);
+            --btn-red: linear-gradient(135deg, #5b1d1d, #3a1010);
+            --btn-purple: linear-gradient(135deg, #1b1612, #100b08);
+            --btn-white: rgba(255, 255, 255, 0.05);
+            --btn-white-border: rgba(212, 175, 55, 0.3);
+            --btn-blue-announce: linear-gradient(135deg, #1b1612, #100b08);
         }
 
         body {
@@ -50,11 +54,14 @@
             position: fixed;
             top: 0;
             right: 0;
-            width: 70%; /* [[ تم التعديل إلى 70% حسب الطلب ]] */
+            width: 70%;
             max-width: 380px;
             height: 100%;
             background-color: var(--panel-bg);
-            box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(15px);
+            border-left: 1px solid var(--gold-primary);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            color: var(--text-color);
             z-index: 999;
             display: flex;
             flex-direction: column;
@@ -67,61 +74,101 @@
 
         .profile-header {
             background-color: var(--header-bg);
-            color: white;
-            padding: 10px;
+            color: var(--gold-light);
+            padding: 15px 10px;
             text-align: center;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.1rem;
             position: relative;
             flex-shrink: 0;
+            border-bottom: 1px solid var(--input-border);
         }
 
         .profile-header .close-btn {
             position: absolute;
-            left: 8px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
-            background-color: var(--btn-red);
-            color: white;
-            border: 1px solid rgba(0,0,0,0.2);
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
+            background: rgba(255,0,0,0.2);
+            color: #ff4d4d;
+            border: 1px solid transparent;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
+        }
+        .profile-header .close-btn:hover { background: #ff4d4d; color: white; box-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
+
+        .profile-tabs {
+            display: flex;
+            background: var(--header-bg);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            padding: 0 10px;
+        }
+        .profile-tab {
+            flex: 1;
+            padding: 12px 0;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-weight: bold;
+            font-family: 'Tahoma', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .profile-tab.active { color: var(--gold-primary); }
+        .profile-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--gold-primary);
+            box-shadow: 0 -2px 10px rgba(212, 175, 55, 0.6);
         }
 
         .profile-body {
-            padding: 10px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
             overflow-y: auto;
             flex-grow: 1;
         }
 
-        .input-group { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 5px; overflow: hidden; background-color: var(--input-bg); height: 36px; }
-        .input-group .label { background-color: var(--label-bg); color: var(--label-text); padding: 0 12px; font-size: 0.85rem; white-space: nowrap; height: 100%; display: flex; align-items: center; }
-        .input-group input[type="text"] { border: none; outline: none; padding: 0 10px; width: 100%; background-color: transparent; font-size: 0.9rem; }
-        .color-input-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .color-input-group { display: flex; align-items: center; height: 34px; }
-        .color-input-group .label { background-color: var(--label-bg); color: var(--label-text); padding: 0 8px; border-radius: 4px 0 0 4px; font-size: 0.8rem; height: 100%; display: flex; align-items: center; }
-        .color-input-group .color-box { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 0 4px 4px 0; padding: 0 6px; background-color: var(--input-bg); flex-grow: 1; height: 100%; cursor: pointer; }
-        .color-input-group .color-box input { border: none; outline: none; background: transparent; font-family: monospace; font-size: 0.9rem; width: 100%; text-align: left; padding-left: 5px; letter-spacing: 1px; pointer-events: none; }
-        .save-button-container { display: flex; justify-content: flex-start; }
-        .save-btn { background: linear-gradient(180deg, #1b140f, #120e0a); color: #d4af37; border: 1px solid #d4af37; padding: 5px 10px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
-        .save-btn:hover { background: #d4af37; color: #0a0806; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
-        .action-button { width: 100%; padding: 6px 15px; border-radius: 5px; border: 1px solid var(--btn-white-border); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; }
+        .input-group { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 50px; overflow: hidden; background-color: var(--input-bg); height: 40px; transition: border-color 0.3s; }
+        .input-group:focus-within { border-color: var(--gold-primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .input-group .label { background-color: var(--label-bg); color: var(--label-text); padding: 0 15px; font-size: 0.85rem; font-weight: bold; white-space: nowrap; height: 100%; display: flex; align-items: center; }
+        .input-group input[type="text"] { border: none; outline: none; padding: 0 15px; width: 100%; background-color: transparent; font-size: 0.9rem; color: var(--text-color); }
+        
+        .color-input-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .color-input-group { display: flex; align-items: center; height: 38px; border: 1px solid var(--input-border); border-radius: 50px; overflow: hidden; background-color: var(--input-bg); }
+        .color-input-group .label { background-color: transparent; color: var(--label-text); padding: 0 10px; font-size: 0.75rem; font-weight: bold; height: 100%; display: flex; align-items: center; }
+        .color-input-group .color-box { display: flex; align-items: center; padding: 0 8px; flex-grow: 1; height: 100%; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.1); }
+        .color-input-group .color-box input { border: none; outline: none; background: transparent; font-family: monospace; font-size: 0.85rem; width: 100%; text-align: left; padding-left: 5px; pointer-events: none; }
+        
+        .save-button-container { display: flex; justify-content: flex-start; margin-top: 5px; margin-bottom: 5px; }
+        .save-btn { background: var(--btn-green-save); color: var(--gold-primary); border: 1px solid var(--gold-primary); padding: 8px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
+        .save-btn:hover { background: var(--gold-primary); color: #0a0806; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        
+        .action-button { width: 100%; padding: 10px 20px; border-radius: 50px; border: 1px solid var(--btn-white-border); font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; }
+        .action-button:hover { border-color: var(--gold-primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+        
         .btn-white { background-color: var(--btn-white); color: var(--text-color); }
-        .btn-red { background: linear-gradient(135deg, #5b1d1d 0%, #3a1010 100%); color: white; border: 1px solid #a63a3a; box-shadow: 0 0 5px rgba(166, 58, 58, 0.3); }
-        .btn-red:hover { background: #a63a3a; box-shadow: 0 0 15px rgba(166, 58, 58, 0.6); }
-        .btn-green { background-color: var(--btn-green-extra); color: white; border-color: var(--btn-green-extra); }
-        .btn-purple { background: linear-gradient(135deg, #1b1612 0%, #100b08 100%); color: #d4af37; border: 1px solid #d4af37; box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+        .btn-red { background: var(--btn-red); color: #ffdfdf; border: 1px solid #a63a3a; }
+        .btn-red:hover { background: #a63a3a; color: white; box-shadow: 0 0 15px rgba(166, 58, 58, 0.6); border-color: #ff4d4d; }
+        .btn-green { background: var(--btn-green-extra); color: var(--gold-light); border-color: var(--gold-primary); }
+        .btn-purple { background: var(--btn-purple); color: #d4af37; border: 1px solid #d4af37; }
         .btn-purple:hover { background: #d4af37; color: #100b08; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-        .btn-blue { background-color: var(--btn-blue-announce); color: white; border-color: var(--btn-blue-announce); }
-        .action-button i { font-size: 1rem; opacity: 0.8; }
+        .btn-blue { background: var(--btn-blue-announce); color: var(--gold-light); border-color: var(--gold-primary); }
+        .action-button i { font-size: 1.1rem; }
 
         .extras-menu { display: none; flex-direction: column; gap: 8px; padding-right: 20px; margin-top: -4px; margin-bottom: 4px; }
         .extras-menu.visible { display: flex; }
@@ -252,7 +299,11 @@
 
     <div id="profile-backdrop" class="profile-backdrop"></div>
     <div id="profile-panel" class="profile-panel-container">
-        <div class="profile-header">الملف الشخصي<button id="close-profile-btn" class="close-btn">x</button></div>
+        <div class="profile-header">إعدادات الحساب<button id="close-profile-btn" class="close-btn">×</button></div>
+        <div class="profile-tabs">
+            <button class="profile-tab active">الزخرفة</button>
+            <button class="profile-tab">الملف الشخصي</button>
+        </div>
         <div class="profile-body">
             <div class="input-group"><span class="label">الزخرفة</span><input type="text" value="سمو آلمہلگ" readonly></div>
             <div class="input-group"><span class="label">الحالة</span><input type="text" value="مشغول"></div>
