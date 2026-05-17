@@ -8,16 +8,45 @@
         /* نفس كود التصميم الدقيق السابق */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
         :root {
-            --app-bg: #EAEAEA; --card-bg: #FFFFFF; --text-primary: #000000;
-            --text-secondary: #555555; --like-red: #FF1A1A; --button-black: #222222;
-            --send-blue: #1a73e8; --border-color: #E0E0E0;
+            --bg-primary: #0a0806;
+            --bg-secondary: #120e0a;
+            --bg-tertiary: #1b140f;
+            --bg-card: rgba(18, 14, 10, 0.95);
+            
+            --gold-primary: #d4af37;
+            --gold-light: #ffdf7a;
+            --gold-dark: #c59b27;
+            --bronze-border: rgba(212, 175, 55, 0.3);
+            
+            --text-primary: #ffdf7a;
+            --text-body: #e8e4dc;
+            --text-muted: #a69580;
+            
+            --like-red: #8b0000;
+            --button-black: rgba(10, 8, 6, 0.8);
+            --send-blue: var(--gold-primary);
+            --border-color: var(--bronze-border);
         }
         body {
             font-family: 'Tajawal', sans-serif; margin: 0; padding: 0;
-            background-color: var(--app-bg); color: var(--text-primary);
-            display: flex; /* [العودة للتخطيط المقسم] */
+            background: radial-gradient(circle at center, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            color: var(--text-body);
+            display: flex;
             height: 100vh;
             overflow: hidden;
+        }
+        
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* حركات الدخول الانسيابية */
+        .fade-in-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .fade-in-element.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* [التعديل] الحاوية الرئيسية الآن عرضها 80% */
@@ -27,40 +56,47 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            border-left: 1px solid var(--border-color); /* خط فاصل */
+            border-left: 1px solid var(--border-color);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
         }
 
-        /* [جديد] اللوحة الجانبية الفارغة (20%) */
         .side-panel {
             width: 20%;
             height: 100%;
-            /* يمكن إضافة محتوى هنا لاحقًا */
+            background: rgba(10, 8, 6, 0.6);
         }
 
-        /* لوحة اليوتيوب العلوية */
         .youtube-panel {
-            background-color: #fff;
-            padding: 10px;
+            background-color: var(--bg-secondary);
+            padding: 12px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            z-index: 10;
         }
         .youtube-panel input {
             flex-grow: 1;
+            background: var(--bg-tertiary);
+            color: var(--text-body);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 8px;
+            padding: 8px 12px;
             font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
         }
+        .youtube-panel input:focus { border-color: var(--gold-primary); outline: none; box-shadow: 0 0 8px rgba(212, 175, 55, 0.3); }
         .youtube-panel button {
-            background-color: #ff0000;
-            color: white;
-            border: none;
+            background: linear-gradient(135deg, #1b1612, #100b08);
+            color: var(--gold-primary);
+            border: 1px solid var(--gold-primary);
             border-radius: 8px;
-            padding: 0 15px;
+            padding: 0 20px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s;
         }
+        .youtube-panel button:hover { background: var(--gold-primary); color: var(--bg-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
         .wall-container {
             flex-grow: 1;
@@ -70,39 +106,42 @@
 
         /* --- نفس تصميم البطاقات الدقيق --- */
         .post-card {
-            background-color: var(--card-bg); border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #1b1612 0%, #100b08 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); 
+            position: relative; overflow: hidden;
+            transition: border-color 0.3s;
         }
-        .post-card::before, .post-card::after {
-            content: ''; position: absolute; width: 0; height: 0; border-style: solid;
-            opacity: 0.15; z-index: 0;
-        }
-        .post-card::before { top: 0; left: 0; border-width: 50px 50px 0 0; border-color: #888 transparent transparent transparent; }
-        .post-card::after { bottom: 0; right: 0; border-width: 0 0 50px 50px; border-color: transparent transparent #888 transparent; }
+        .post-card:hover { border-color: rgba(212, 175, 55, 0.6); }
         .post-header, .post-content, .post-footer { position: relative; z-index: 1; }
-        .post-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; }
-        .user-info { display: flex; align-items: center; gap: 8px; }
-        .user-info img { width: 34px; height: 34px; border-radius: 50%; }
-        .decorated-name { background-color: var(--button-black); color: white; padding: 4px 12px; border-radius: 16px; font-size: 15px; font-weight: 700; }
-        .post-time { font-size: 11px; color: var(--text-secondary); }
-        .post-content { padding: 5px 15px 12px 15px; font-size: 15px; line-height: 1.6; font-weight: 500; }
-        .post-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 12px 12px 12px; }
-        .actions { display: flex; gap: 6px; }
-        .action-button { display: flex; align-items: center; justify-content: center; background-color: var(--button-black); color: white; border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 500; cursor: pointer; }
-        .like-button { background-color: var(--like-red); gap: 4px; padding: 5px 12px; }
-        .like-button .icon { font-size: 16px; line-height: 1; }
-        .delete-button { padding: 6px 8px; }
+        .post-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold-primary); }
+        .decorated-name { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); color: var(--gold-primary); padding: 4px 12px; border-radius: 16px; font-size: 14px; font-weight: bold; }
+        .post-time { font-size: 11px; color: var(--text-muted); }
+        .post-content { padding: 5px 15px 15px 15px; font-size: 15px; line-height: 1.6; font-weight: 500; color: var(--text-body); }
+        .post-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 15px 15px 15px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 12px; }
+        .actions { display: flex; gap: 8px; }
+        .action-button { display: flex; align-items: center; justify-content: center; background-color: var(--button-black); border: 1px solid var(--border-color); color: var(--text-body); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .action-button:hover { background: rgba(212, 175, 55, 0.15); color: var(--gold-light); border-color: var(--gold-primary); }
+        .like-button { background-color: rgba(91, 29, 29, 0.6); border-color: #a63a3a; color: #ffdfdf; gap: 4px; }
+        .like-button:hover { background-color: var(--like-red); border-color: #ff4d4d; color: white; box-shadow: 0 0 10px rgba(255, 26, 26, 0.4); }
+        .delete-button { padding: 6px 10px; background: none; border: none; font-size: 14px; opacity: 0.6; }
+        .delete-button:hover { opacity: 1; background: rgba(255,0,0,0.2); border: none; }
 
         /* --- الشريط السفلي --- */
         .bottom-bar {
-            background-color: #F1F3F4; border-top: 1px solid #DCDCDC;
-            padding: 8px;
+            background-color: var(--bg-secondary); border-top: 1px solid var(--border-color);
+            padding: 12px; z-index: 10;
         }
-        .input-wrapper { display: flex; align-items: center; gap: 8px; }
-        .input-wrapper input { flex-grow: 1; background-color: var(--card-bg); border: 1px solid #DCDCDC; border-radius: 18px; padding: 8px 14px; color: var(--text-primary); font-size: 14px; font-family: 'Tajawal', sans-serif; }
-        .input-wrapper input:focus { outline: none; border-color: #B0B0B0; }
-        .send-button { background-color: var(--send-blue); border: none; border-radius: 50%; width: 40px; height: 40px; min-width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .send-button svg { width: 20px; height: 20px; fill: white; transform: scaleX(-1) translateX(-1px); }
+        .input-wrapper { display: flex; align-items: center; gap: 10px; }
+        .input-wrapper input { flex-grow: 1; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 15px; color: var(--text-body); font-size: 14px; font-family: 'Tajawal', sans-serif; transition: border-color 0.3s; }
+        .input-wrapper input:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .send-button { background: linear-gradient(180deg, var(--bg-tertiary), var(--bg-secondary)); border: 1px solid var(--gold-primary); border-radius: 50%; width: 45px; height: 45px; min-width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
+        .send-button svg { width: 22px; height: 22px; fill: var(--gold-primary); transform: scaleX(-1) translateX(-2px); transition: fill 0.3s; }
+        .send-button:hover { background: var(--gold-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .send-button:hover svg { fill: var(--bg-primary); }
 
         /* نافذة التعليقات (الدردشة المصغرة) */
         .comments-modal-overlay {
@@ -113,15 +152,16 @@
             z-index: 1000;
         }
         .comments-modal {
-            background-color: #fff; width: 90%; max-width: 500px;
+            background-color: var(--bg-primary); width: 90%; max-width: 500px;
+            border: 1px solid var(--gold-primary); box-shadow: 0 0 25px rgba(0,0,0,0.8);
             border-radius: 12px; display: flex; flex-direction: column;
             height: 70%;
         }
-        .comments-header { padding: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); }
-        .comments-body { flex-grow: 1; padding: 15px; overflow-y: auto; }
-        .comment { margin-bottom: 10px; font-size: 14px; }
-        .comment b { color: #333; }
-        .comments-footer { border-top: 1px solid var(--border-color); }
+        .comments-header { padding: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); color: var(--gold-light); }
+        .comments-body { flex-grow: 1; padding: 15px; overflow-y: auto; color: var(--text-body); }
+        .comment { margin-bottom: 12px; font-size: 14px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .comment b { color: var(--gold-primary); display: block; margin-bottom: 4px; }
+        .comments-footer { border-top: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 0 0 12px 12px; }
 
     </style>
 </head>
@@ -134,7 +174,7 @@
         </div>
 
         <div class="wall-container">
-            <article class="post-card">
+            <article class="post-card fade-in-element">
                 <div class="post-header">
                     <div class="user-info">
                         <img src="https://i.pravatar.cc/100?u=king" alt="User">
@@ -190,11 +230,34 @@
     </div>
 
     <script>
+        // نظام نافذة التعليقات
         const commentsModal = document.getElementById('comments-modal');
         function openComments() { commentsModal.style.display = 'flex'; }
         function closeComments() { commentsModal.style.display = 'none'; }
         commentsModal.addEventListener('click', function(event) {
             if (event.target === commentsModal) { closeComments(); }
+        });
+
+        // نظام حركات الدخول الانسيابية (Animations)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // بمجرد ظهورها، لا نلغي ظهورها لتبقى ثابتة
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // تفعيل المراقب على جميع المنشورات
+        document.querySelectorAll('.fade-in-element').forEach(element => {
+            observer.observe(element);
         });
     </script>
 
