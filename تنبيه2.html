@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكون بركان المجد (جاهز للدمج)</title>
+    
+    <!-- تأكد من وجود هذا السطر في ملفك الرئيسي -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- ======================================================================= -->
+    <!-- == 1. قسم الـ CSS: انسخ هذا الجزء وأضفه إلى ملف CSS الرئيسي لديك == -->
+    <!-- ======================================================================= -->
+    <style>
+        /* --- بداية كود CSS لـ "بركان المجد" --- */
+        
+        /* الغلاف الخارجي الذي يغطي الشاشة */
+        #receiver-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5 ); /* تعتيم خفيف للخلفية */
+            backdrop-filter: blur(5px); /* تشويش خفيف للخلفية */
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3000; opacity: 0; visibility: hidden; transition: opacity 0.6s ease;
+        }
+        #receiver-screen.visible { opacity: 1; visibility: visible; }
+
+        /* الصندوق الرئيسي للإشعار */
+        .message-box {
+            width: 90%; max-width: 340px; /* حجم أصغر وأكثر رشاقة */
+            padding: 25px; background: #1a0000; border: 1px solid; border-radius: 15px;
+            box-shadow: 0 0 35px; text-align: center; transform: translateY(30px); opacity: 0;
+            transition: all 0.5s ease 0.2s; position: relative; overflow: hidden;
+        }
+        #receiver-screen.visible .message-box { transform: translateY(0); opacity: 1; }
+
+        /* حاوية كرات الحمم */
+        .lava-lamp { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .blob { position: absolute; background: linear-gradient(180deg, #ff5e3a, #ff2a00); border-radius: 50%; filter: blur(8px); animation: move 10s infinite alternate; }
+        
+        /* 30 جمرة نارية لكثافة أعلى */
+        .blob:nth-child(1){width:20px;height:20px;left:15%;animation-duration:10s}.blob:nth-child(2){width:30px;height:30px;left:80%;animation-duration:7s}.blob:nth-child(3){width:15px;height:15px;left:30%;animation-duration:13s}.blob:nth-child(4){width:25px;height:25px;left:90%;animation-duration:8s}.blob:nth-child(5){width:18px;height:18px;left:5%;animation-duration:11s}.blob:nth-child(6){width:28px;height:28px;left:50%;animation-duration:9s}.blob:nth-child(7){width:22px;height:22px;left:65%;animation-duration:14s}.blob:nth-child(8){width:12px;height:12px;left:40%;animation-duration:10s}.blob:nth-child(9){width:35px;height:35px;left:20%;animation-duration:8s}.blob:nth-child(10){width:16px;height:16px;left:75%;animation-duration:12s}.blob:nth-child(11){width:24px;height:24px;left:55%;animation-duration:7s}.blob:nth-child(12){width:14px;height:14px;left:85%;animation-duration:15s}.blob:nth-child(13){width:26px;height:26px;left:10%;animation-duration:9s}.blob:nth-child(14){width:19px;height:19px;left:45%;animation-duration:11s}.blob:nth-child(15){width:32px;height:32px;left:70%;animation-duration:8s}.blob:nth-child(16){width:17px;height:17px;left:25%;animation-duration:12s}.blob:nth-child(17){width:21px;height:21px;left:60%;animation-duration:10s}.blob:nth-child(18){width:29px;height:29px;left:35%;animation-duration:9s}.blob:nth-child(19){width:13px;height:13px;left:95%;animation-duration:14s}.blob:nth-child(20){width:23px;height:23px;left:0%;animation-duration:11s}.blob:nth-child(21){width:19px;height:19px;left:58%;animation-duration:13s}.blob:nth-child(22){width:27px;height:27px;left:3%;animation-duration:8s}.blob:nth-child(23){width:16px;height:16px;left:48%;animation-duration:12s}.blob:nth-child(24){width:31px;height:31px;left:88%;animation-duration:9s}.blob:nth-child(25){width:22px;height:22px;left:18%;animation-duration:10s}.blob:nth-child(26){width:14px;height:14px;left:78%;animation-duration:14s}.blob:nth-child(27){width:28px;height:28px;left:28%;animation-duration:8s}.blob:nth-child(28){width:18px;height:18px;left:68%;animation-duration:11s}.blob:nth-child(29){width:25px;height:25px;left:8%;animation-duration:9s}.blob:nth-child(30){width:20px;height:20px;left:98%;animation-duration:12s}
+        @keyframes move { from { transform: translateY(340px) scale(1.2); } to { transform: translateY(-100px) scale(0.8); } }
+
+        /* المحتوى الذي يظهر فوق الحمم */
+        .message-content { position: relative; z-index: 2; }
+        .message-icon { font-size: 32px; margin-bottom: 12px; text-shadow: 0 0 15px; transition: color 0.5s ease; }
+        .message-text { font-size: 17px; line-height: 1.7; min-height: 70px; color: #f5f5f5; margin-bottom: 20px; text-shadow: 0 0 5px #000; }
+        .alert-close-btn { padding: 6px 20px; font-size: 13px; background: rgba(0, 0, 0, 0.3); border: 1px solid; color: #f5f5f5; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; position: relative; z-index: 2; }
+        .alert-close-btn:hover { color: #fff; box-shadow: 0 0 15px; }
+        
+        /* الألوان الديناميكية للأنواع المختلفة */
+        .message-box.type-danger { border-color: rgba(255, 60, 60, 0.5); box-shadow: 0 0 35px rgba(255, 40, 40, 0.7); }
+        .message-box.type-danger .message-icon { color: #ff4d4d; }
+        .message-box.type-danger .alert-close-btn { border-color: rgba(255, 60, 60, 0.5); }
+        .message-box.type-danger .alert-close-btn:hover { background: #ff4d4d; border-color: #ff4d4d; }
+
+        .message-box.type-success { border-color: rgba(0, 255, 150, 0.5); box-shadow: 0 0 35px rgba(0, 255, 150, 0.6); }
+        .message-box.type-success .message-icon { color: #00ff96; }
+        .message-box.type-success .alert-close-btn { border-color: rgba(0, 255, 150, 0.5); }
+        .message-box.type-success .alert-close-btn:hover { background: #00ff96; border-color: #00ff96; }
+
+        .message-box.type-gift { border-color: rgba(255, 215, 0, 0.6); box-shadow: 0 0 35px rgba(255, 215, 0, 0.7); }
+        .message-box.type-gift .message-icon { color: #ffd700; }
+        .message-box.type-gift .alert-close-btn { border-color: rgba(255, 215, 0, 0.6); }
+        .message-box.type-gift .alert-close-btn:hover { background: #ffd700; border-color: #ffd700; }
+
+        /* تصميم صورة الهدية */
+        .gift-image-wrapper { margin-bottom: 15px; }
+        .gift-image { max-width: 80px; max-height: 80px; animation: pop-in 0.5s ease-out; }
+        @keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* --- نهاية كود CSS لـ "بركان المجد" --- */
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================================= -->
+    <!-- == 2. قسم الـ HTML: انسخ هذا الجزء وأضفه قبل </body> في ملفك الرئيسي == -->
+    <!-- ======================================================================= -->
+    <div id="receiver-screen">
+        <div class="message-box" id="messageBox">
+            <div class="lava-lamp">
+                <div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div><div class="blob"></div>
+            </div>
+            <div class="message-content">
+                <i class="fas message-icon" id="messageIcon"></i>
+                <div id="giftImageWrapper" class="gift-image-wrapper"></div>
+                <p id="messageText" class="message-text"></p>
+                <button class="alert-close-btn" id="closeReceiverButton">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- == أمثلة للاستخدام (يمكنك حذف هذا الجزء بعد الدمج) == -->
+    <!-- ======================================================================= -->
+    <div style="padding: 50px; text-align: center; font-family: 'Tajawal', sans-serif;">
+        <h2 style="color: black;">اختبار مكون "بركان المجد"</h2>
+        <button onclick="testRankUp()" style="padding: 15px; font-size: 16px; margin: 10px; cursor: pointer;">اختبار: ترقية رتبة</button>
+        <button onclick="testRankDown()" style="padding: 15px; font-size: 16px; margin: 10px; cursor: pointer;">اختبار: سحب رتبة</button>
+        <button onclick="testGift()" style="padding: 15px; font-size: 16px; margin: 10px; cursor: pointer;">اختبار: إرسال هدية</button>
+    </div>
+
+
+    <!-- ======================================================================= -->
+    <!-- == 3. قسم الـ JavaScript: انسخ هذا الجزء وأضفه إلى ملف JS الرئيسي لديك == -->
+    <!-- ======================================================================= -->
+    <script>
+        // --- بداية كود JavaScript لـ "بركان المجد" ---
+
+        // تعريف المتغيرات للعناصر
+        const receiverScreen = document.getElementById('receiver-screen');
+        const messageBox = document.getElementById('messageBox');
+        const messageIcon = document.getElementById('messageIcon');
+        const messageText = document.getElementById('messageText');
+        const giftImageWrapper = document.getElementById('giftImageWrapper');
+        const closeReceiverButton = document.getElementById('closeReceiverButton');
+        let autoCloseTimer;
+
+        // دالة لإغلاق الإشعار
+        function closeFieryAlert() {
+            clearTimeout(autoCloseTimer);
+            if(receiverScreen) receiverScreen.classList.remove('visible');
+        }
+
+        /**
+         * الدالة السحرية المطورة: استدعِ هذه الدالة من أي مكان في كودك
+         * @param {object} options - كائن يحتوي على خيارات الإشعار
+         * @param {string} options.type - نوع الإشعار ('success', 'danger', 'gift')
+         * @param {string} options.icon - كلاس أيقونة FontAwesome (مثال: 'fa-award')
+         * @param {string} options.message - الرسالة التي ستظهر
+         * @param {string} [options.giftImageUrl] - (اختياري) رابط صورة الهدية
+         */
+        function showFieryAlert(options) {
+            // التأكد من وجود العناصر قبل محاولة استخدامها
+            if(!receiverScreen || !messageBox || !messageIcon || !messageText) return;
+
+            // 1. تحديث الألوان والأيقونة
+            messageBox.className = 'message-box'; // إعادة تعيين الكلاسات
+            messageBox.classList.add(`type-${options.type}`);
+            messageIcon.className = `fas ${options.icon} message-icon`;
+
+            // 2. عرض صورة الهدية (إذا وجدت)
+            giftImageWrapper.innerHTML = '';
+            if (options.giftImageUrl) {
+                giftImageWrapper.innerHTML = `<img src="${options.giftImageUrl}" alt="Gift" class="gift-image">`;
+            }
+
+            // 3. عرض الرسالة مع تأثير الآلة الكاتبة
+            messageText.innerHTML = "";
+            receiverScreen.classList.add('visible');
+            
+            setTimeout(() => {
+                let i = 0;
+                function type() {
+                    if (i < options.message.length) {
+                        messageText.innerHTML += options.message.charAt(i);
+                        i++;
+                        setTimeout(type, 50);
+                    }
+                }
+                type();
+            }, 600);
+
+            // 4. مؤقت الإغلاق التلقائي بعد 6 ثوانٍ
+            clearTimeout(autoCloseTimer);
+            autoCloseTimer = setTimeout(closeFieryAlert, 6000);
+        }
+
+        // ربط زر الإغلاق بوظيفته
+        if(closeReceiverButton) {
+            closeReceiverButton.addEventListener('click', closeFieryAlert);
+        }
+
+        // --- دوال الاختبار (يمكنك حذفها بعد الدمج) ---
+        function testRankUp() {
+            showFieryAlert({
+                type: 'success',
+                icon: 'fa-award', // ★★★ الأيقونة الجديدة للترقية ★★★
+                message: 'تهانينا! تمت ترقيتك إلى رتبة "عضو مميز".'
+            });
+        }
+
+        function testRankDown() {
+            showFieryAlert({
+                type: 'danger',
+                icon: 'fa-shield-halved',
+                message: 'للأسف، تم سحب رتبة "المشرف" منك.'
+            });
+        }
+
+        function testGift() {
+            showFieryAlert({
+                type: 'gift',
+                icon: 'fa-gift',
+                message: 'لقد أرسل لك "The Ghost" هدية!',
+                giftImageUrl: 'https://i.imgur.com/JzL5gGz.png'
+            } );
+        }
+        
+        // --- نهاية كود JavaScript لـ "بركان المجد" ---
+    </script>
+
+</body>
+</html>

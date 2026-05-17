@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>واجهة دردشة متكاملة ومحسّنة</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+        /* === التصميم الفاخر الجديد للدردشة === */
+        :root {
+            --bg-primary: #0a0806;
+            --bg-secondary: #120e0a;
+            --bg-tertiary: #1b140f;
+            --bg-card: rgba(18, 14, 10, 0.95);
+            
+            --gold-primary: #d4af37;
+            --gold-light: #ffdf7a;
+            --gold-dark: #c59b27;
+            --bronze-border: #3d2b1f;
+            
+            --text-primary: #ffdf7a;
+            --text-body: #e8e4dc;
+            --text-muted: #a69580;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Tajawal', Arial, sans-serif; 
+            background: radial-gradient(circle at center, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            color: var(--text-body);
+            overflow-x: hidden; 
+        }
+        
+        .chat-container { 
+            width: 100%; max-width: 450px; height: 100vh; 
+            background: var(--bg-card); 
+            margin: auto; display: flex; flex-direction: column; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(212, 175, 55, 0.1); 
+            border-left: 1px solid var(--bronze-border);
+            border-right: 1px solid var(--bronze-border);
+        }
+        
+        .chat-messages { flex-grow: 1; padding: 15px 10px; overflow-y: auto; }
+        
+        /* Customized Scrollbar */
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: var(--bg-primary); }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+        
+        /* Chat Message Animations */
+        .fade-in-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .fade-in-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .chat-message { 
+            direction: rtl; display: flex; align-items: flex-end; 
+            margin-bottom: 20px; gap: 10px; position: relative; 
+        }
+
+        /* Avatar and VIP Glowing Rings */
+        .avatar-container {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+        }
+        .avatar-img { 
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; 
+            border: 2px solid var(--gold-primary);
+        }
+        .vip-ring {
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%; pointer-events: none;
+            border: 2px solid var(--gold-primary);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .message-body { max-width: 75%; display: flex; flex-direction: column; }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .user-name { font-weight: bold; font-size: 0.9rem; color: #ffdf7a; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .role-badge { 
+            background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); 
+            color: var(--text-primary); font-size: 0.7rem; padding: 2px 6px; border-radius: 12px; 
+        }
+
+        /* Bubble Styling (Sender vs Receiver) */
+        .message-bubble { 
+            padding: 12px 15px; border-radius: 15px; font-size: 0.95rem; 
+            line-height: 1.5; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+            word-wrap: break-word; color: var(--text-body);
+        }
+        
+        .chat-message.sender { flex-direction: row-reverse; }
+        .chat-message.sender .message-body { align-items: flex-end; }
+        .chat-message.sender .message-header { flex-direction: row-reverse; }
+        .chat-message.sender .message-bubble { 
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border-left: 2px solid var(--gold-primary);
+            border-bottom-left-radius: 0; 
+        }
+        
+        .chat-message.receiver { flex-direction: row; }
+        .chat-message.receiver .message-body { align-items: flex-start; }
+        .chat-message.receiver .message-bubble { 
+            background: linear-gradient(135deg, #1b1612 0%, #100b08 100%);
+            border-right: 2px solid var(--text-muted);
+            border-bottom-right-radius: 0; 
+        }
+
+        .delete-msg-btn {
+            position: absolute; top: 50%; left: -25px; transform: translateY(-50%);
+            color: #ff4d4d; cursor: pointer; font-size: 1.2rem; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .chat-message.sender .delete-msg-btn { right: -25px; left: auto; }
+        .chat-message:hover .delete-msg-btn { opacity: 1; }
+
+        .clear-chat-btn {
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #5b1d1d, #3a1010); border: 1px solid #a63a3a;
+            color: white; border-radius: 50%; width: 32px; height: 32px; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 20; transition: all 0.3s;
+        }
+        .clear-chat-btn:hover { background: #a63a3a; box-shadow: 0 0 15px rgba(166, 58, 58, 0.4); }
+
+        .chat-input-container { 
+            background: var(--bg-secondary); padding: 12px; flex-shrink: 0; 
+            border-top: 1px solid var(--bronze-border);
+        }
+        .input-main-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .input-wrapper { 
+            flex-grow: 1; display: flex; align-items: center; 
+            background: var(--bg-tertiary); border: 1px solid var(--bronze-border); 
+            border-radius: 20px; padding: 4px 10px; transition: border-color 0.3s;
+        }
+        .input-wrapper:focus-within { border-color: var(--gold-primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .input-wrapper .input-field { 
+            flex-grow: 1; padding: 8px; border: none; font-size: 0.95rem; 
+            direction: rtl; text-align: right; outline: none; background: transparent; color: var(--text-body);
+        }
+        .input-wrapper .icon-btn { font-size: 1.3rem; color: var(--gold-primary); background: none; padding: 2px; cursor: pointer; margin-left: 5px; transition: color 0.2s; }
+        .input-wrapper .icon-btn:hover { color: var(--gold-light); }
+        .send-btn { 
+            background: linear-gradient(180deg, var(--bg-tertiary), var(--bg-secondary)); 
+            border: 1px solid var(--gold-primary); color: var(--gold-primary); 
+            border-radius: 50%; width: 42px; height: 42px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; cursor: pointer; transition: all 0.3s;
+        }
+        .send-btn:hover { background: var(--gold-primary); color: var(--bg-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .send-btn i { font-size: 1.2rem; margin-right: 2px; }
+        
+        .chat-footer { 
+            display: flex; justify-content: space-around; 
+            background: var(--bg-primary); border-top: 1px solid var(--bronze-border); 
+            border-radius: 12px; padding: 5px 0; margin-bottom: 5px;
+        }
+        .footer-button { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8rem; font-family: 'Tajawal', sans-serif; transition: all 0.3s; }
+        .footer-button i { font-size: 1.3rem; margin-bottom: 2px; }
+        .footer-button:hover { color: var(--text-body); }
+        .footer-button.active { color: var(--gold-primary); text-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }
+
+        .chat-header {
+            padding: 15px 10px; display: flex; justify-content: center; align-items: center;
+            position: relative; z-index: 10; border-bottom: 2px solid var(--gold-primary);
+            background: linear-gradient(to bottom, #1a1410, var(--bg-primary));
+            overflow: hidden;
+            border-image: linear-gradient(to right, transparent, var(--gold-primary), transparent) 1;
+        }
+        #particles-js { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .particle { position: absolute; border-radius: 50%; animation: drift 25s linear infinite; }
+        @keyframes drift {
+            from { transform: translateX(0) translateY(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; }
+            to { transform: translateX(calc(var(--x-drift) * 1px)) translateY(calc(var(--y-drift) * 1px)); opacity: 0; }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.7); }
+        }
+        .controls-container { display: flex; align-items: center; gap: 8px; z-index: 5; }
+        .speaker-control, .mic-slot {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid var(--gold-primary);
+            transition: all 0.3s ease; position: relative;
+        }
+        .speaker-control.muted-all { background: var(--danger-bg); border-color: var(--danger-border); }
+        .speaker-control i { font-size: 1.1rem; color: var(--gold-light); }
+        .mic-slot:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+        .mic-slot .mic-icon { font-size: 1.1rem; color: var(--gold-dark); }
+        .mic-slot .user-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none; }
+        .mic-slot.taken .mic-icon { display: none; }
+        .mic-slot.taken .user-avatar { display: block; }
+        .mic-slot.broadcasting { border-color: #00f0ff; box-shadow: 0 0 12px rgba(0, 240, 255, 0.6); }
+        .mic-slot.muted-by-user { border-color: #ff3d00; box-shadow: 0 0 12px rgba(255, 61, 0, 0.6); }
+        
+        .control-menu {
+            position: absolute; z-index: 100; display: none; flex-direction: column;
+            gap: 2px; background: rgba(10, 8, 6, 0.95); border: 1px solid var(--gold-primary);
+            border-radius: 12px; padding: 6px; backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+        .control-menu.visible { display: flex; }
+        .control-menu button { background: none; border: none; color: var(--text-body); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; text-align: right; white-space: nowrap; font-family: 'Tajawal', sans-serif; }
+        .control-menu button:hover { background: rgba(212, 175, 55, 0.15); color: var(--gold-light); }
+        .control-menu button.danger { color: #ff5252; }
+        .control-menu .submenu-container { position: relative; }
+        .control-menu .submenu { display: none; flex-direction: column; position: absolute; left: 100%; top: -5px; background: rgba(10, 8, 6, 0.95); padding: 6px; border-radius: 12px; border: 1px solid var(--gold-primary); }
+        .control-menu .submenu-container:hover .submenu { display: flex; }
+
+        /* === [[ CSS للإشعارات المتعددة ]] === */
+        .notification-banner {
+            direction: rtl; text-align: center; color: var(--gold-light); padding: 10px 20px; margin: 15px auto;
+            border-radius: 20px; font-size: 0.85rem; width: fit-content; max-width: 90%;
+            white-space: nowrap; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            animation: entry-from-left 10s forwards; opacity: 0; position: relative; z-index: 50;
+            border: 1px solid var(--gold-primary); background: var(--bg-secondary);
+        }
+        .notification-banner .star-icon { color: var(--gold-primary); font-size: 0.8rem; margin: 0 5px; }
+        @keyframes entry-from-left {
+            0% { opacity: 0; transform: translateX(100vw); } 10% { opacity: 1; transform: translateX(0); }
+            90% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(-100vw); height: 0; padding: 0; margin: 0; border: 0; overflow: hidden; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        
+        <header class="chat-header">
+            <!-- [[ زر حذف المحادثة الكاملة الجديد ]] -->
+            <button id="clear-chat-btn" class="clear-chat-btn" title="حذف جميع الرسائل">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <!-- [[ نهاية الزر الجديد ]] -->
+            <div id="particles-js"></div>
+            <div class="controls-container">
+                <div class="speaker-control" title="كتم/فتح صوت جميع المايكات"><i class="bi bi-volume-up-fill"></i></div>
+                <div class="mic-slot" data-mic-id="1"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+                <div class="mic-slot" data-mic-id="2"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+                <div class="mic-slot" data-mic-id="3"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+                <div class="mic-slot" data-mic-id="4"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+                <div class="mic-slot" data-mic-id="5"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+                <div class="mic-slot" data-mic-id="6"><i class="bi bi-mic-fill mic-icon"></i><img class="user-avatar"></div>
+            </div>
+        </header>
+
+        <main class="chat-messages" id="chat-messages">
+            <div class="chat-message receiver fade-in-element">
+                <div class="avatar-container">
+                    <div class="vip-ring"></div>
+                    <img src="https://i.imgur.com/yO4j2Mh.png" alt="Avatar" class="avatar-img">
+                </div>
+                <div class="message-body">
+                    <div class="message-header">
+                        <span class="user-name">كـ <i class="bi bi-book-fill"></i> ــتآب</span>
+                        <span class="role-badge">المراقب</span>
+                    </div>
+                    <div class="message-bubble">الكتاب الي تعرفه</div>
+                </div>
+                <i class="bi bi-trash-fill delete-msg-btn" title="حذف الرسالة"></i>
+            </div>
+        </main>
+
+        <div class="chat-input-container">
+            <div class="input-main-row">
+                <div class="input-wrapper">
+                    <input type="text" class="input-field" id="message-input" placeholder="اكتب رسالتك هنا...">
+                    <i class="bi bi-emoji-smile-fill icon-btn"></i>
+                    <i class="bi bi-paperclip icon-btn"></i>
+                    <i class="bi bi-mic-fill icon-btn"></i>
+                </div>
+                <button class="send-btn" id="send-button"><i class="bi bi-send-fill"></i></button>
+            </div>
+            <footer class="chat-footer">
+                <button class="footer-button"><i class="bi bi-star-fill"></i></button>
+                <button class="footer-button active"><i class="bi bi-gear-fill"></i><span>الضبط</span></button>
+                <button class="footer-button"><i class="bi bi-chat-dots-fill"></i><span>الحائط</span></button>
+                <button class="footer-button"><i class="bi bi-people-fill"></i><span>الغرف</span></button>
+                <button class="footer-button"><i class="bi bi-chat-fill"></i><span>خاص</span></button>
+                <button class="footer-button"><i class="bi bi-person-fill"></i><span>6</span></button>
+            </footer>
+        </div>
+    </div>
+
+    <div id="control-menu-template" class="control-menu"></div>
+    <div id="jitsi-container-hidden" style="position: absolute; bottom: 0; width: 1px; height: 1px; opacity: 0;"></div>
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <script>
+        const chatMessages = document.getElementById('chat-messages'  );
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const clearChatButton = document.getElementById('clear-chat-btn'); // تمت إضافة متغير لزر حذف المحادثة
+
+        // === إعداد مراقب التمرير للحركات ===
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        function observeElements() {
+            document.querySelectorAll('.fade-in-element:not(.visible)').forEach(el => observer.observe(el));
+        }
+        observeElements();
+
+        // === [[ كود إرسال الرسائل (مُعدّل للتصميم الفاخر) ]] ===
+        function addMessage(text) {
+            if (text.trim() === '') return;
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', 'sender', 'fade-in-element');
+            messageElement.innerHTML = `
+                <div class="avatar-container">
+                    <div class="vip-ring" style="border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.4);"></div>
+                    <img src="https://i.imgur.com/L6Bq4yD.jpeg" alt="Avatar" class="avatar-img">
+                </div>
+                <div class="message-body">
+                    <div class="message-header">
+                        <span class="user-name" style="color: #00f0ff;">أنا</span>
+                        <span class="role-badge" style="border-color: #00f0ff; color: #00f0ff;">المالك</span>
+                    </div>
+                    <div class="message-bubble">${text}</div>
+                </div>
+                <i class="bi bi-trash-fill delete-msg-btn" title="حذف الرسالة"></i>`;
+            chatMessages.appendChild(messageElement);
+            observeElements(); // مراقبة العنصر الجديد للتحريك
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            messageInput.value = '';
+            messageInput.focus();
+        }
+        sendButton.addEventListener('click', () => addMessage(messageInput.value));
+        messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addMessage(messageInput.value); } });
+
+        // === [[ كود جديد: وظائف الحذف ]] ===
+        // 1. حذف رسالة فردية
+        chatMessages.addEventListener('click', function(e) {
+            // التحقق من أن العنصر الذي تم النقر عليه هو زر الحذف
+            if (e.target.classList.contains('delete-msg-btn')) {
+                // الحصول على عنصر الرسالة الأب وحذفه
+                const messageToDelete = e.target.closest('.message');
+                if (messageToDelete) {
+                    messageToDelete.remove();
+                }
+            }
+        });
+
+        // 2. حذف المحادثة بالكامل
+        clearChatButton.addEventListener('click', function() {
+            // طلب تأكيد من المستخدم قبل الحذف
+            if (confirm('هل أنت متأكد أنك تريد حذف جميع الرسائل في المحادثة؟')) {
+                // حذف جميع العناصر التي هي رسائل فقط (وليس إشعارات)
+                const allMessages = chatMessages.querySelectorAll('.message');
+                allMessages.forEach(msg => msg.remove());
+            }
+        });
+        // === [[ نهاية كود الحذف الجديد ]] ===
+
+        // === [[ دوال الإشعارات المحدثة ]] ===
+        function createNotification(innerHTML, typeClass) {
+            const notification = document.createElement('div');
+            notification.className = `notification-banner ${typeClass}`;
+            notification.innerHTML = innerHTML;
+            chatMessages.appendChild(notification);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(() => notification.remove(), 10000); // **تم تغيير المدة إلى 10 ثواني**
+        }
+
+        function showJoinNotification(username, roomName) { createNotification(`<i class="bi bi-star-fill star-icon"></i><span class="username">${username}</span><i class="bi bi-star-fill star-icon"></i> دخل <span class="room-name">[${roomName}]</span>`, 'join'); }
+        function showLeaveNotification(username) { createNotification(`تم تسجيل الخروج من الدردشة (<span class="username">${username}</span>)`, 'leave'); }
+        function showSwitchRoomNotification(username, roomName) { createNotification(`انتقل <span class="username">${username}</span> إلى روم [<span class="room-name">${roomName}]</span>]`, 'move'); }
+        function showAdminMoveNotification(username, roomName) { createNotification(`تم نقل العضو <span class="username">${username}</span> إلى روم [<span class="room-name">${roomName}]</span>]`, 'move'); }
+        function showPersonalMoveNotification(roomName) { createNotification(`تم نقلك إلى غرفة [<span class="room-name">${roomName}]</span>]`, 'move'); }
+
+        // === [[ محاكاة الأحداث المحدثة ]] ===
+        setTimeout(() => showJoinNotification("سلطان", "الغرفة الرئيسية"), 2000);
+        setTimeout(() => showSwitchRoomNotification("سلطان", "الغرفة الخاصة"), 7000);
+        setTimeout(() => {
+            // إشعار عام للجميع
+            showAdminMoveNotification("سلطان", "غرفة كبار الشخصيات");
+            // إشعار خاص للمستخدم الذي تم نقله (في التطبيق الحقيقي، سترسل هذا لشخص واحد فقط)
+            showPersonalMoveNotification("غرفة كبار الشخصيات");
+        }, 12000);
+        setTimeout(() => showLeaveNotification("سلطان"), 17000);
+
+        // === [[ الكود الخاص بالمايكات (بدون تغيير) ]] ===
+        const mics = {};
+        const currentUser = { isAdmin: false, myMicId: null };
+        const defaultAvatar = 'https://i.imgur.com/k5w2s9L.png';
+        const urlParams = new URLSearchParams(window.location.search  );
+        if (urlParams.get('admin') === 'true') currentUser.isAdmin = true;
+        const controlMenu = document.getElementById('control-menu-template');
+        let activeMenuMicId = null;
+        let isMutedAll = false;
+        const particlesContainer = document.getElementById('particles-js');
+        const colors = ['#FFFFFF', '#FFD700', '#FF4500'];
+        for (let i = 0; i < 100; i++) {
+            const p = document.createElement('div'); p.classList.add('particle');
+            const size = Math.random() * 2.0 + 0.5; p.style.width = `${size}px`; p.style.height = `${size}px`;
+            p.style.left = `${Math.random() * 100}%`; p.style.top = `${Math.random() * 100}%`;
+            p.style.backgroundColor = colors[i % colors.length];
+            p.style.setProperty('--x-drift', (Math.random() - 0.5) * 400); p.style.setProperty('--y-drift', (Math.random() - 0.5) * 400);
+            p.style.animationDelay = `${Math.random() * 25}s`; p.style.animationDuration = `${Math.random() * 15 + 10}s`;
+            particlesContainer.appendChild(p);
+        }
+        document.querySelectorAll('.mic-slot').forEach(micSlot => {
+            micSlot.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const micId = micSlot.dataset.micId;
+                if (mics[micId]) { showControlMenu(micId, micSlot); } 
+                else { if (currentUser.myMicId) { alert("لا يمكنك الصعود على أكثر من مايك واحد."); return; } takeMic(micId, micSlot); }
+            });
+        });
+        document.querySelector('.speaker-control').addEventListener('click', () => {
+            isMutedAll = !isMutedAll;
+            document.querySelector('.speaker-control').classList.toggle('muted-all', isMutedAll);
+            document.querySelector('.speaker-control i').className = isMutedAll ? 'bi bi-volume-mute-fill' : 'bi bi-volume-up-fill';
+            Object.values(mics).forEach(micState => {
+                if (micState.micSlot.dataset.micId !== currentUser.myMicId) {
+                    micState.api.setParticipantVolume(micState.api.getMyUserId(), isMutedAll ? 0 : 1);
+                }
+            });
+        });
+        function takeMic(micId, micSlot) {
+            micSlot.classList.add('taken', 'muted-by-user');
+            micSlot.querySelector('.user-avatar').src = defaultAvatar;
+            currentUser.myMicId = micId;
+            const api = new JitsiMeetExternalAPI('meet.jit.si', {
+                roomName: `TheOnlyWorkingVersion_Mic${micId}`,
+                parentNode: document.getElementById('jitsi-container-hidden'),
+                configOverwrite: { prejoinPageEnabled: false, startWithAudioMuted: true, startWithVideoMuted: true },
+                interfaceConfigOverwrite: { TOOLBAR_BUTTONS: [] }
+            });
+            mics[micId] = { api, micSlot, isIgnored: false };
+            api.addEventListener('audioMuteStatusChanged', (event) => {
+                micSlot.classList.toggle('muted-by-user', event.muted);
+                micSlot.classList.toggle('broadcasting', !event.muted);
+            });
+            api.addEventListener('videoConferenceLeft', () => leaveMic(micId));
+        }
+        function leaveMic(micId) {
+            const micState = mics[micId];
+            if (!micState) return;
+            micState.micSlot.classList.remove('taken', 'broadcasting', 'muted-by-user');
+            if (micState.api) micState.api.dispose();
+            if (currentUser.myMicId === micId) currentUser.myMicId = null;
+            delete mics[micId];
+            hideControlMenu();
+        }
+        function showControlMenu(micId, micSlot) {
+            activeMenuMicId = micId;
+            let buttons = '';
+            if (currentUser.myMicId === micId) {
+                buttons = `<button data-action="toggle-mute"><i class="bi bi-mic-mute-fill"></i> كتم/فتح الصوت</button><button data-action="leave" class="danger"><i class="bi bi-box-arrow-right"></i> مغادرة</button>`;
+            } else {
+                buttons = `<button data-action="ignore"><i class="bi bi-ear-fill"></i> تجاهل</button>`;
+                if (currentUser.isAdmin) {
+                    buttons += `<hr style="border-color: rgba(255,255,255,0.2); margin: 4px 0;"><button data-action="admin-mute"><i class="bi bi-mic-mute-fill"></i> كتم للجميع</button><button data-action="kick" class="danger"><i class="bi bi-door-closed-fill"></i> طرد</button><div class="submenu-container"><button class="danger"><i class="bi bi-slash-circle-fill"></i> حظر</button><div class="submenu"><button data-action="ban" data-duration="hour">ساعة</button><button data-action="ban" data-duration="day">يوم</button><button data-action="ban" data-duration="permanent">دائم</button></div></div>`;
+                }
+            }
+            controlMenu.innerHTML = buttons;
+            const rect = micSlot.getBoundingClientRect();
+            controlMenu.style.top = `${rect.bottom + 5}px`;
+            controlMenu.style.left = `${rect.left + (rect.width / 2) - (controlMenu.offsetWidth / 2)}px`;
+            controlMenu.classList.add('visible');
+        }
+        function hideControlMenu() { controlMenu.classList.remove('visible'); }
+        controlMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const button = e.target.closest('button');
+            if (!button || !button.dataset.action) return;
+            const action = button.dataset.action;
+            const micState = mics[activeMenuMicId];
+            if (!micState) return;
+            switch (action) {
+                case 'toggle-mute': micState.api.executeCommand('toggleAudio'); break;
+                case 'leave': leaveMic(activeMenuMicId); break;
+                case 'ignore':
+                    micState.isIgnored = !micState.isIgnored;
+                    micState.api.setParticipantVolume(micState.api.getMyUserId(), micState.isIgnored ? 0 : 1);
+                    alert(micState.isIgnored ? 'تم تجاهل المستخدم' : 'تم إلغاء التجاهل');
+                    break;
+                case 'admin-mute': micState.api.executeCommand('toggleAudio'); break;
+                case 'kick': leaveMic(activeMenuMicId); break;
+                case 'ban':
+                    const duration = button.dataset.duration;
+                    alert(`محاكاة: تم حظر المستخدم لمدة ${duration}.`);
+                    leaveMic(activeMenuMicId);
+                    break;
+            }
+            hideControlMenu();
+        });
+        document.addEventListener('click', hideControlMenu);
+    </script>
+
+</body>
+</html>

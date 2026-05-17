@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي المتكامل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --panel-bg: #EFEFEF;
+            --header-bg: #383838;
+            --input-bg: #FFFFFF;
+            --input-border: #BDBDBD;
+            --text-color: #000000;
+            --label-bg: #7F7F7F;
+            --label-text: #FFFFFF;
+            --btn-green-save: #28A745;
+            --btn-green-extra: #27ae60;
+            --btn-red: #DC3545;
+            --btn-purple: #8e44ad;
+            --btn-white: #FFFFFF;
+            --btn-white-border: #BDBDBD;
+            --btn-blue-announce: #007BFF; 
+        }
+
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #dcdcdc;
+        }
+
+        .profile-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5 );
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .profile-backdrop.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* [[ تعديل ]] : حجم لوحة الملف الشخصي الرئيسية */
+        .profile-panel-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 70%; /* [[ تم التعديل إلى 70% حسب الطلب ]] */
+            max-width: 380px;
+            height: 100%;
+            background-color: var(--panel-bg);
+            box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .profile-panel-container.visible {
+            transform: translateX(0);
+        }
+
+        .profile-header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-header .close-btn {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--btn-red);
+            color: white;
+            border: 1px solid rgba(0,0,0,0.2);
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .input-group { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 5px; overflow: hidden; background-color: var(--input-bg); height: 36px; }
+        .input-group .label { background-color: var(--label-bg); color: var(--label-text); padding: 0 12px; font-size: 0.85rem; white-space: nowrap; height: 100%; display: flex; align-items: center; }
+        .input-group input[type="text"] { border: none; outline: none; padding: 0 10px; width: 100%; background-color: transparent; font-size: 0.9rem; }
+        .color-input-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .color-input-group { display: flex; align-items: center; height: 34px; }
+        .color-input-group .label { background-color: var(--label-bg); color: var(--label-text); padding: 0 8px; border-radius: 4px 0 0 4px; font-size: 0.8rem; height: 100%; display: flex; align-items: center; }
+        .color-input-group .color-box { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 0 4px 4px 0; padding: 0 6px; background-color: var(--input-bg); flex-grow: 1; height: 100%; cursor: pointer; }
+        .color-input-group .color-box input { border: none; outline: none; background: transparent; font-family: monospace; font-size: 0.9rem; width: 100%; text-align: left; padding-left: 5px; letter-spacing: 1px; pointer-events: none; }
+        .save-button-container { display: flex; justify-content: flex-start; }
+        .save-btn { background: linear-gradient(180deg, #1b140f, #120e0a); color: #d4af37; border: 1px solid #d4af37; padding: 5px 10px; border-radius: 5px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
+        .save-btn:hover { background: #d4af37; color: #0a0806; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+        .action-button { width: 100%; padding: 6px 15px; border-radius: 5px; border: 1px solid var(--btn-white-border); font-size: 0.9rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; }
+        .btn-white { background-color: var(--btn-white); color: var(--text-color); }
+        .btn-red { background: linear-gradient(135deg, #5b1d1d 0%, #3a1010 100%); color: white; border: 1px solid #a63a3a; box-shadow: 0 0 5px rgba(166, 58, 58, 0.3); }
+        .btn-red:hover { background: #a63a3a; box-shadow: 0 0 15px rgba(166, 58, 58, 0.6); }
+        .btn-green { background-color: var(--btn-green-extra); color: white; border-color: var(--btn-green-extra); }
+        .btn-purple { background: linear-gradient(135deg, #1b1612 0%, #100b08 100%); color: #d4af37; border: 1px solid #d4af37; box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+        .btn-purple:hover { background: #d4af37; color: #100b08; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .btn-blue { background-color: var(--btn-blue-announce); color: white; border-color: var(--btn-blue-announce); }
+        .action-button i { font-size: 1rem; opacity: 0.8; }
+
+        .extras-menu { display: none; flex-direction: column; gap: 8px; padding-right: 20px; margin-top: -4px; margin-bottom: 4px; }
+        .extras-menu.visible { display: flex; }
+
+        /* === [[ CSS: منتقي الألوان المتطور (المعاد حسب الطلب) ]] === */
+        .color-picker-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .color-picker-panel.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .picker-container {
+            width: 300px;
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .selected-color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+        }
+        .picker-header button {
+            background: var(--btn-green-save);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .picker-main {
+            display: flex;
+            gap: 15px;
+        }
+        .color-palette {
+            width: 220px;
+            height: 150px;
+            position: relative;
+            cursor: crosshair;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .color-palette .saturation-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, white, transparent);
+        }
+        .color-palette .value-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, black, transparent);
+        }
+        .palette-handle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1.5px black, inset 0 0 0 1.5px black;
+            pointer-events: none;
+            transform: translate(-8px, -8px);
+        }
+        .hue-slider {
+            width: 20px;
+            height: 150px;
+            position: relative;
+            cursor: pointer;
+            border-radius: 6px;
+            background: linear-gradient(to bottom, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+        }
+        .hue-handle {
+            position: absolute;
+            left: -3px;
+            width: 26px;
+            height: 5px;
+            background-color: white;
+            border: 1px solid #999;
+            border-radius: 2px;
+            pointer-events: none;
+            transform: translateY(-2.5px);
+        }
+
+        /* === CSS: لوحة تأثيرات الخط === */
+        .effects-panel { position: fixed; bottom: 0; left: 0; width: 100%; height: 50%; background-color: #2c2c2c; color: white; z-index: 1001; border-top: 2px solid var(--btn-purple); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.4s ease; }
+        .effects-panel.visible { transform: translateY(0); }
+        .effects-header { padding: 10px 15px; background-color: #1e1e1e; display: flex; justify-content: space-between; align-items: center; }
+        .effects-header h3 { margin: 0; font-size: 1rem; }
+        .effects-header .close-effects-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .effects-grid { padding: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; overflow-y: auto; }
+        .effect-box { background-color: #444; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: background-color 0.2s; font-size: 1rem; font-weight: bold; }
+        .effect-box:hover { background-color: #555; }
+        .effect-neon { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6; color: #fff; }
+        .effect-flame { text-shadow: 0 0 4px #fff, 0 0 6px #ff0, 0 0 10px #f90, 0 0 15px #f60; color: #ffc; }
+        .effect-ice { text-shadow: 0 0 5px #aef, 0 0 10px #aef, 0 0 15px #fff, 0 0 20px #fff; color: #ddf; }
+        .effect-gold { background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C); -webkit-background-clip: text; color: transparent; }
+        .effect-3d { text-shadow: 1px 1px 0px #ccc, 2px 2px 0px #bbb, 3px 3px 0px #aaa; color: #333; }
+        .effect-ghost { text-shadow: 0 0 10px rgba(255,255,255,0.5); color: transparent; }
+    </style>
+</head>
+<body>
+    <button id="open-profile-btn" style="position: fixed; top: 20px; left: 20px; z-index: 100; padding: 10px; font-size: 1rem;">فتح الملف الشخصي</button>
+
+    <div id="profile-backdrop" class="profile-backdrop"></div>
+    <div id="profile-panel" class="profile-panel-container">
+        <div class="profile-header">الملف الشخصي<button id="close-profile-btn" class="close-btn">x</button></div>
+        <div class="profile-body">
+            <div class="input-group"><span class="label">الزخرفة</span><input type="text" value="سمو آلمہلگ" readonly></div>
+            <div class="input-group"><span class="label">الحالة</span><input type="text" value="مشغول"></div>
+            <div class="color-input-container">
+                <div class="color-input-group"><span class="label">لون الحالة</span><div class="color-box" style="background-color: #555555;"><input type="text" value="555555" style="color: white;" maxlength="6"></div></div>
+                <div class="color-input-group"><span class="label">لون الخط</span><div class="color-box" style="background-color: #000000;"><input type="text" value="000000" style="color: white;" maxlength="6"></div></div>
+                <div class="color-input-group"><span class="label">لون الإسم</span><div class="color-box" style="background-color: #CCCCCC;"><input type="text" value="CCCCCC" style="color: black;" maxlength="6"></div></div>
+                <div class="color-input-group"><span class="label">لون الخلفية</span><div class="color-box" style="background-color: #000000;"><input type="text" value="000000" style="color: white;" maxlength="6"></div></div>
+            </div>
+            <div class="save-button-container"><button class="save-btn"><i class="bi bi-pencil-square"></i> حفظ</button></div>
+            <button class="action-button btn-white"><span>تغيير الصورة</span><i class="bi bi-image"></i></button>
+            <button class="action-button btn-red"><span>حذف الصورة</span><i class="bi bi-x-lg"></i></button>
+            <button id="extras-btn" class="action-button btn-green"><span>إضافات أخرى</span><i class="bi bi-star-fill"></i></button>
+            <div id="extras-menu" class="extras-menu">
+                <button id="effects-btn" class="action-button btn-white"><span>تأثيرات الخط</span><i class="bi bi-magic"></i></button>
+            </div>
+            <button class="action-button btn-blue"><span>إعلان</span><i class="bi bi-megaphone-fill"></i></button>
+            <button class="action-button btn-white"><span>اعدادات</span><i class="bi bi-gear-fill"></i></button>
+            <button class="action-button btn-white"><span>تعطيل المحادثات الخاصة</span></button>
+            <button class="action-button btn-white"><span>تعطيل التنبيهات</span></button>
+            <button class="action-button btn-purple"><span>تغيير كلمة المرور</span><i class="bi bi-key-fill"></i></button>
+            <button class="action-button btn-red"><span>تسجيل الخروج</span><i class="bi bi-box-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- منتقي الألوان المتطور -->
+    <div id="color-picker" class="color-picker-panel">
+        <div class="picker-container">
+            <div class="picker-header">
+                <div id="selected-color-preview" class="selected-color-preview"></div>
+                <button id="confirm-color-btn">اختيار</button>
+            </div>
+            <div class="picker-main">
+                <div id="color-palette" class="color-palette">
+                    <div class="saturation-overlay"></div>
+                    <div class="value-overlay"></div>
+                    <div id="palette-handle" class="palette-handle"></div>
+                </div>
+                <div id="hue-slider" class="hue-slider">
+                    <div id="hue-handle" class="hue-handle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- لوحة تأثيرات الخط -->
+    <div id="effects-panel" class="effects-panel">
+        <div class="effects-header">
+            <h3>اختر تأثيرًا للخط</h3>
+            <button id="close-effects-btn" class="close-effects-btn">&times;</button>
+        </div>
+        <div id="effects-grid" class="effects-grid"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- التحكم في لوحة الملف الشخصي الرئيسية ---
+            const profilePanel = document.getElementById('profile-panel');
+            const profileBackdrop = document.getElementById('profile-backdrop');
+            const openProfileBtn = document.getElementById('open-profile-btn');
+            const closeProfileBtn = document.getElementById('close-profile-btn');
+            function openProfile() { profilePanel.classList.add('visible'); profileBackdrop.classList.add('visible'); }
+            function closeProfile() { profilePanel.classList.remove('visible'); profileBackdrop.classList.remove('visible'); }
+            openProfileBtn.addEventListener('click', openProfile);
+            closeProfileBtn.addEventListener('click', closeProfile);
+            profileBackdrop.addEventListener('click', closeProfile);
+
+            // --- التحكم في قائمة الإضافات ---
+            const extrasBtn = document.getElementById('extras-btn');
+            const extrasMenu = document.getElementById('extras-menu');
+            extrasBtn.addEventListener('click', () => { extrasMenu.classList.toggle('visible'); });
+
+            // --- التحكم في منتقي الألوان المتطور ---
+            const colorPickerPanel = document.getElementById('color-picker');
+            const confirmBtn = document.getElementById('confirm-color-btn');
+            let activeColorBox = null;
+            const palette = document.getElementById('color-palette');
+            const paletteHandle = document.getElementById('palette-handle');
+            const hueSlider = document.getElementById('hue-slider');
+            const hueHandle = document.getElementById('hue-handle');
+            const preview = document.getElementById('selected-color-preview');
+            let hue = 0, saturation = 1, value = 1;
+            let isDraggingPalette = false, isDraggingHue = false;
+            function updateColor() { const rgb = hsvToRgb(hue, saturation, value); const hex = rgbToHex(rgb.r, rgb.g, rgb.b); preview.style.backgroundColor = hex; palette.style.backgroundColor = `hsl(${hue}, 100%, 50%)`; }
+            function updatePaletteHandle(x, y) { saturation = x / palette.clientWidth; value = 1 - (y / palette.clientHeight); paletteHandle.style.left = `${x}px`; paletteHandle.style.top = `${y}px`; updateColor(); }
+            function updateHueHandle(y) { hue = (y / hueSlider.clientHeight) * 360; hueHandle.style.top = `${y}px`; updateColor(); }
+            const start = (e) => { if (e.currentTarget === hueSlider) isDraggingHue = true; if (e.currentTarget === palette) isDraggingPalette = true; move(e); };
+            const end = () => { isDraggingHue = false; isDraggingPalette = false; };
+            const move = (e) => { const event = e.touches ? e.touches[0] : e; if (isDraggingHue) { const rect = hueSlider.getBoundingClientRect(); const y = Math.max(0, Math.min(event.clientY - rect.top, rect.height)); updateHueHandle(y); } if (isDraggingPalette) { const rect = palette.getBoundingClientRect(); const x = Math.max(0, Math.min(event.clientX - rect.left, rect.width)); const y = Math.max(0, Math.min(event.clientY - rect.top, rect.height)); updatePaletteHandle(x, y); } };
+            hueSlider.addEventListener('mousedown', start); palette.addEventListener('mousedown', start); hueSlider.addEventListener('touchstart', start); palette.addEventListener('touchstart', start);
+            document.addEventListener('mouseup', end); document.addEventListener('touchend', end); document.addEventListener('mousemove', move); document.addEventListener('touchmove', move);
+            document.querySelectorAll('.color-box').forEach(box => { box.addEventListener('click', () => { activeColorBox = box; colorPickerPanel.classList.add('visible'); const initialHex = '#' + box.querySelector('input').value; const hsv = hexToHsv(initialHex); hue = hsv.h; saturation = hsv.s; value = hsv.v; updateHueHandle((hue / 360) * hueSlider.clientHeight); updatePaletteHandle(saturation * palette.clientWidth, (1 - value) * palette.clientHeight); }); });
+            function closePicker() { colorPickerPanel.classList.remove('visible'); }
+            confirmBtn.addEventListener('click', () => { if (activeColorBox) { const rgb = hsvToRgb(hue, saturation, value); const hex = rgbToHex(rgb.r, rgb.g, rgb.b); const input = activeColorBox.querySelector('input'); activeColorBox.style.backgroundColor = hex; input.value = hex.substring(1).toUpperCase(); input.style.color = (hsvToRgb(hue, saturation, value).r * 299 + hsvToRgb(hue, saturation, value).g * 587 + hsvToRgb(hue, saturation, value).b * 114) / 1000 >= 128 ? '#000000' : '#FFFFFF'; } closePicker(); });
+            colorPickerPanel.addEventListener('click', e => { if (e.target === colorPickerPanel) closePicker(); });
+            function hsvToRgb(h, s, v) { let r, g, b, i, f, p, q, t; i = Math.floor(h / 60); f = h / 60 - i; p = v * (1 - s); q = v * (1 - f * s); t = v * (1 - (1 - f) * s); switch (i % 6) { case 0: r = v, g = t, b = p; break; case 1: r = q, g = v, b = p; break; case 2: r = p, g = v, b = t; break; case 3: r = p, g = q, b = v; break; case 4: r = t, g = p, b = v; break; case 5: r = v, g = p, b = q; break; } return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) }; }
+            function rgbToHex(r, g, b) { return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase(); }
+            function hexToHsv(hex) { let r = parseInt(hex.substr(1, 2), 16) / 255; let g = parseInt(hex.substr(3, 2), 16) / 255; let b = parseInt(hex.substr(5, 2), 16) / 255; let max = Math.max(r, g, b), min = Math.min(r, g, b); let h, s, v = max; let d = max - min; s = max == 0 ? 0 : d / max; if (max == min) { h = 0; } else { switch (max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; } h /= 6; } return { h: h * 360, s: s, v: v }; }
+
+            // --- التحكم في لوحة تأثيرات الخط ---
+            const effectsPanel = document.getElementById('effects-panel');
+            const openEffectsBtn = document.getElementById('effects-btn');
+            const closeEffectsBtn = document.getElementById('close-effects-btn');
+            const effectsGrid = document.getElementById('effects-grid');
+            const effects = [ { name: 'نيون', class: 'effect-neon' }, { name: 'لهب', class: 'effect-flame' }, { name: 'ثلج', class: 'effect-ice' }, { name: 'ذهبي', class: 'effect-gold' }, { name: 'ثلاثي الأبعاد', class: 'effect-3d' }, { name: 'شبح', class: 'effect-ghost' } ];
+            while (effects.length < 50) { effects.push({ name: `تأثير ${effects.length + 1}`, class: '' }); }
+            effects.forEach(effect => { const effectBox = document.createElement('div'); effectBox.className = `effect-box ${effect.class}`; effectBox.textContent = effect.name; effectBox.addEventListener('click', () => { console.log(`تم اختيار تأثير: ${effect.name}`); effectsPanel.classList.remove('visible'); }); effectsGrid.appendChild(effectBox); });
+            openEffectsBtn.addEventListener('click', () => effectsPanel.classList.add('visible'));
+            closeEffectsBtn.addEventListener('click', () => effectsPanel.classList.remove('visible'));
+        });
+    </script>
+
+</body>
+</html>

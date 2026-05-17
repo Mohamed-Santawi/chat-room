@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>بث مباشر - الواجهة الاجتماعية الكاملة</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* --- الإعدادات الأساسية والخطوط --- */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
+        
+        :root {
+            --primary-color: #3498db;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --dark-bg: #131417;
+            --text-light: #ecf0f1;
+            --gold-color: #ffd700;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            overflow: hidden;
+        }
+
+        /* --- الحاوية الرئيسية للبث --- */
+        #live-section-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ================================================================= */
+        /* ===== بداية: الخلفية الجديدة (فيديو الطبيعة) - CSS ===== */
+        /* ================================================================= */
+        #background-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 1; /* خلف كل شيء آخر */
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover; /* يضمن ملء الشاشة بدون تشويه */
+        }
+        
+        /* --- حاوية الطبقات العلوية --- */
+        #overlay-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10; /* فوق الفيديو */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        #overlay-container > * {
+            pointer-events: auto;
+        }
+        
+        .top-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+            padding-bottom: 10px;
+        }
+
+        /* --- أنماط الشريط العلوي (تيك توك) --- */
+        #live-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px 0 15px;
+            gap: 10px;
+        }
+        .header-left { display: flex; align-items: center; background: rgba(0,0,0,0.4); border-radius: 50px; padding: 4px; }
+        .streamer-info-v2 { display: flex; align-items: center; gap: 8px; }
+        .streamer-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; }
+        .streamer-details { display: flex; flex-direction: column; color: #fff; line-height: 1.2; }
+        .streamer-name { font-weight: bold; font-size: 0.9em; }
+        .streamer-likes { font-size: 0.8em; opacity: 0.8; }
+        .streamer-likes .bi-heart-fill { color: #ff4d4d; }
+        .follow-btn { background-color: #fe2c55; color: #fff; border: none; border-radius: 20px; padding: 6px 12px; font-weight: bold; font-size: 0.9em; margin-right: 10px; cursor: pointer; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .viewers-count { background: rgba(0,0,0,0.4); color: #fff; border-radius: 20px; padding: 6px 10px; font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
+        .exit-btn { background: rgba(0,0,0,0.4); color: #fff; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.1em; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        /* --- أنماط شريط الأهداف والترتيب --- */
+        .live-goals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+        .goal-item { background: rgba(0, 0, 0, 0.3); border-radius: 50px; padding: 5px 10px; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 0.8em; flex-shrink: 1; min-width: 0; }
+        .rank-badge-icon { width: 35px; height: 35px; }
+        .goal-target-icon { width: 25px; height: 25px; }
+        .goal-text { display: flex; flex-direction: column; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .goal-title { font-weight: bold; }
+        .goal-progress { font-size: 0.9em; opacity: 0.8; }
+        .text-gold { color: var(--gold-color); font-weight: bold; }
+        .goal-item .bi-chevron-left { font-size: 1.2em; opacity: 0.7; }
+
+        /* ================================================================= */
+        /* ===== بداية المرحلة 3: أنماط واجهة الضيوف المتعددين (CSS) ===== */
+        /* ================================================================= */
+        #guest-slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            padding: 5px 15px;
+            position: absolute;
+            top: 110px; /* يمكن تعديل هذا الرقم لضبط الموضع العمودي */
+            width: calc(100% - 30px);
+            z-index: 20;
+        }
+        .guest-slot {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .guest-avatar { width: 100%; height: 100%; object-fit: cover; }
+        .guest-name { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); background-color: rgba(0, 0, 0, 0.6); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; white-space: nowrap; }
+        .guest-controls { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 5px; }
+        .guest-controls button { background-color: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7em; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        /* --- حاوية التفاعل السفلية --- */
+        #interaction-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 15px;
+            height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        }
+
+        /* --- نظام الدردشة --- */
+        #messages-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column-reverse; scrollbar-width: none; -ms-overflow-style: none; }
+        #messages-wrapper::-webkit-scrollbar { display: none; }
+        #messages { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; justify-content: flex-end; }
+        .message-item { background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); padding: 8px 12px; border-radius: 15px; margin-bottom: 8px; max-width: 85%; animation: slideIn 0.3s ease-out; display: flex; align-items: center; gap: 10px; }
+        .message-avatar { width: 30px; height: 30px; border-radius: 50%; }
+        .message-content { display: flex; flex-direction: column; }
+        .message-user { font-weight: bold; font-size: 0.9em; color: var(--primary-color); }
+        .message-text { font-size: 1em; word-wrap: break-word; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- أنماط الأيقونات السفلية الجديدة --- */
+        #controls-container-v2 { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .left-controls { flex-grow: 1; }
+        #chat-form { width: 100%; }
+        #chat-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: none; border-radius: 50px; color: #fff; padding: 10px 15px; font-size: 0.9em; }
+        .right-controls { display: flex; align-items: center; gap: 10px; }
+        .control-btn-v2 { background: rgba(0, 0, 0, 0.4); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2em; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background-color 0.2s; }
+        .control-btn-v2:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+        /* --- أنماط نظام طلبات الصعود --- */
+        .request-btn { position: relative; }
+        .notification-badge { position: absolute; top: -2px; right: -2px; background-color: #fe2c55; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7em; display: flex; justify-content: center; align-items: center; border: 1px solid var(--dark-bg); }
+        #guest-requests-panel { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 50vh; background: #282c34; border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1001; transform: translateY(100%); transition: transform 0.3s ease-out; display: flex; flex-direction: column; }
+        #guest-requests-panel.show { transform: translateY(0); }
+        .panel-header { padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; position: relative; }
+        .close-panel-btn { position: absolute; left: 15px; background: none; border: none; color: white; font-size: 1.2em; cursor: pointer; }
+        .panel-body { overflow-y: auto; padding: 10px; }
+        #requests-list { list-style: none; padding: 0; margin: 0; }
+        .request-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 8px; transition: background-color 0.2s; }
+        .request-item:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .request-user-info { display: flex; align-items: center; gap: 10px; }
+        .request-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .request-actions button { padding: 8px 15px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        .btn-accept { background-color: var(--success-color); color: white; }
+        .btn-reject { background-color: var(--danger-color); color: white; }
+
+    </style>
+</head>
+<body>
+
+    <div id="live-section-wrapper">
+        
+        <video id="background-video" autoplay loop muted playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-green-leaves-in-the-wind-4307-large.mp4" type="video/mp4">
+        </video>
+
+        <div id="overlay-container">
+            <div class="top-section">
+                <div id="live-section-header">
+                    <div class="header-left">
+                        <div class="streamer-info-v2">
+                            <img src="https://i.pravatar.cc/150?img=5" alt="Streamer Avatar" class="streamer-avatar">
+                            <div class="streamer-details">
+                                <span class="streamer-name">LaraHoene...</span>
+                                <span class="streamer-likes">3.4M <i class="bi bi-heart-fill"></i></span>
+                            </div>
+                        </div>
+                        <button class="follow-btn">+ متابعة</button>
+                    </div>
+                    <div class="header-right">
+                        <div class="viewers-count">
+                            <i class="bi bi-people-fill"></i>
+                            <span>1.1K</span>
+                        </div>
+                        <button class="exit-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                </div>
+                
+                <div class="live-goals-header">
+                    <div class="goal-item personal-rank">
+                        <img src="https://i.ibb.co/bFkY3f5/rank-badge.png" alt="Rank Badge" class="rank-badge-icon">
+                        <div class="goal-text">
+                            <span class="goal-title">الترتيب الشخصي</span>
+                            <span class="goal-progress">مطلوب نقاط لـ <strong class="text-gold">200+</strong></span>
+                        </div>
+                        <i class="bi bi-chevron-left"></i>
+                    </div>
+                    <div class="goal-item daily-goal">
+                        <img src="https://i.ibb.co/mX5Bf0f/goal-target.png" alt="Goal Target" class="goal-target-icon">
+                        <div class="goal-text">
+                            <span class="goal-title">الترتيب اليومي</span>
+                            <span class="goal-progress"><strong class="text-gold">63/39</strong> <small>(2h11m )</small></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="guest-slots-container">
+                <!-- مقاعد الضيوف ستضاف هنا بواسطة JavaScript -->
+            </div>
+
+            <div id="interaction-container">
+                <div id="messages-wrapper">
+                    <ul id="messages"></ul>
+                </div>
+                <div id="controls-container-v2">
+                    <div class="left-controls">
+                        <form id="chat-form">
+                            <input type="text" id="chat-input" placeholder="أضف تعليقاً...">
+                        </form>
+                    </div>
+                    <div class="right-controls">
+                        <button id="guest-requests-btn" class="control-btn-v2 request-btn">
+                            <i class="bi bi-person-plus-fill"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <button class="control-btn-v2"><i class="bi bi-star-fill"></i></button>
+                        <button class="control-btn-v2"><i class="bi bi-flower1"></i></button>
+                        <button id="gift-panel-btn" class="control-btn-v2"><i class="bi bi-gift-fill"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="guest-requests-panel">
+        <div class="panel-header">
+            <span>طلبات الصعود (3)</span>
+            <button id="close-requests-panel-btn" class="close-panel-btn"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="panel-body">
+            <ul id="requests-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const guestRequestsBtn = document.getElementById('guest-requests-btn');
+        const guestRequestsPanel = document.getElementById('guest-requests-panel');
+        const closeRequestsPanelBtn = document.getElementById('close-requests-panel-btn');
+        const requestsList = document.getElementById('requests-list');
+        const guestSlotsContainer = document.getElementById('guest-slots-container');
+        let activeGuests = [];
+        const requests = [ { id: 1, name: 'علي', avatar: 'https://i.pravatar.cc/150?img=7' }, { id: 2, name: 'فاطمة', avatar: 'https://i.pravatar.cc/150?img=8' }, { id: 3, name: 'يوسف', avatar: 'https://i.pravatar.cc/150?img=9' } ];
+        
+        chatForm.addEventListener('submit', function(e ) { e.preventDefault(); if (chatInput.value) { addMessage('أنت', chatInput.value, 'https://i.pravatar.cc/150?img=1' ); chatInput.value = ''; } });
+        function addMessage(user, text, avatar) { const item = document.createElement('li'); item.className = 'message-item'; item.innerHTML = `<img src="${avatar}" alt="avatar" class="message-avatar"><div class="message-content"><span class="message-user">${user}</span><span class="message-text">${text}</span></div>`; messages.prepend(item); }
+        
+        addMessage('أحمد', 'منور يا غالي', 'https://i.pravatar.cc/150?img=2' );
+        addMessage('سارة', 'أحلى بث والله', 'https://i.pravatar.cc/150?img=3' );
+
+        guestRequestsBtn.addEventListener('click', () => { guestRequestsPanel.classList.add('show'); });
+        closeRequestsPanelBtn.addEventListener('click', () => { guestRequestsPanel.classList.remove('show'); });
+
+        function renderRequests() {
+            requestsList.innerHTML = '';
+            requests.forEach(req => {
+                const item = document.createElement('li');
+                item.className = 'request-item';
+                item.innerHTML = `
+                    <div class="request-user-info">
+                        <img src="${req.avatar}" alt="avatar" class="request-avatar">
+                        <span>${req.name}</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn-reject">رفض</button>
+                        <button class="btn-accept" data-id="${req.id}">قبول</button>
+                    </div>
+                `;
+                item.querySelector('.btn-accept').addEventListener('click', () => {
+                    const guestToAdd = requests.find(r => r.id === req.id);
+                    if (guestToAdd) {
+                        addGuest(guestToAdd);
+                        guestRequestsPanel.classList.remove('show');
+                    }
+                });
+                requestsList.appendChild(item);
+            });
+        }
+        renderRequests();
+
+        function addGuest(guest) {
+            if (!activeGuests.some(g => g.id === guest.id) && activeGuests.length < 5) {
+                activeGuests.push(guest);
+                renderGuests();
+            }
+        }
+        function removeGuest(guestId) {
+            activeGuests = activeGuests.filter(g => g.id !== guestId);
+            renderGuests();
+        }
+        function renderGuests() {
+            guestSlotsContainer.innerHTML = '';
+            activeGuests.forEach(guest => {
+                const slot = document.createElement('div');
+                slot.className = 'guest-slot';
+                slot.innerHTML = `
+                    <img src="${guest.avatar}" class="guest-avatar">
+                    <span class="guest-name">${guest.name}</span>
+                    <div class="guest-controls">
+                        <button class="mute-btn"><i class="bi bi-mic-mute-fill"></i></button>
+                        <button class="remove-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                `;
+                slot.querySelector('.remove-btn').addEventListener('click', () => { removeGuest(guest.id); });
+                guestSlotsContainer.appendChild(slot);
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,731 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>بث مباشر - إصدار القائد</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1E1E1E;
+            --tertiary-bg: #2a2a2a;
+            --text-primary: #FFFFFF;
+            --pk-host-color: #00c7ff; 
+            --pk-challenger-color: #ff2a7f;
+            --pk-bar-bg: #3a3a3a;
+            --gold-color: #ffd700;
+            --silver-color: #c0c0c0;
+            --bronze-color: #cd7f32;
+            --streak-color: #ff9800;
+            --war-color-1: #ff4800;
+            --war-color-2: #ffc107;
+        }
+
+        @font-face {
+            font-family: 'Tajawal';
+            src: url('https://fonts.gstatic.com/s/tajawal/v9/Iura6YBj_oCad4k1nzSBC45I.woff2' ) format('woff2');
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .stream-section {
+            flex-grow: 1;
+            position: relative;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .pk-mode-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* <<< الشريط العلوي الجديد والمؤقت >>> */
+        .top-info-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .top-info-bar.show {
+            opacity: 1;
+        }
+        .viewer-count, #open-supporters-btn {
+            background-color: rgba(0,0,0,0.4);
+            padding: 5px 10px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        #open-supporters-btn {
+            font-size: 1.2rem;
+            padding: 8px;
+            color: var(--gold-color);
+        }
+
+        #streak-war-overlay {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            right: 10px;
+            z-index: 14;
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 15px;
+            animation: slide-down 0.5s forwards;
+        }
+        #streak-war-overlay.show { display: flex; }
+        @keyframes slide-down {
+            from { transform: translateY(-150%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .war-participant { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .war-participant.p1 { flex-direction: row; }
+        .war-participant.p2 { flex-direction: row-reverse; }
+        .war-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .war-participant.p1 .war-avatar { border: 2px solid var(--war-color-1); }
+        .war-participant.p2 .war-avatar { border: 2px solid var(--war-color-2); }
+        .war-info { flex-grow: 1; min-width: 0; }
+        .war-participant.p2 .war-info { text-align: left; }
+        .war-name { font-weight: bold; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .war-streak-count { font-size: 1.2rem; font-weight: bold; }
+        .war-participant.p1 .war-streak-count { color: var(--war-color-1); }
+        .war-participant.p2 .war-streak-count { color: var(--war-color-2); }
+        .war-vs-icon { font-size: 2.5rem; color: #ff4d4d; text-shadow: 0 0 10px #ff0000; }
+        /* <<< عداد الدعم الجديد >>> */
+        .war-gift-count {
+            font-size: 0.7rem;
+            background-color: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 5px;
+            margin-top: 3px;
+        }
+
+        .supporters-popup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 110;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .supporters-popup-overlay.show { opacity: 1; pointer-events: all; }
+        .supporters-popup {
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--gold-color);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 70vh; /* <<< تحديد أقصى ارتفاع >>> */
+            display: flex; /* <<< لتسهيل التمرير الداخلي >>> */
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s;
+            position: relative;
+        }
+        .supporters-popup-overlay.show .supporters-popup { transform: scale(1); }
+        #close-supporters-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background-color: #ff4d4d;
+            color: white;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .popup-header { text-align: center; font-size: 1.5rem; font-weight: bold; padding: 20px 20px 0; color: var(--gold-color); }
+        /* <<< تعديل قائمة الداعمين لجعلها قابلة للتمرير >>> */
+        #supporters-popup-list {
+            overflow-y: auto;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .supporter-item { display: flex; align-items: center; margin-bottom: 15px; background-color: var(--tertiary-bg); padding: 10px; border-radius: 10px; }
+        .supporter-rank { font-size: 1.8rem; font-weight: bold; width: 40px; }
+        .supporter-rank.gold { color: var(--gold-color); }
+        .supporter-rank.silver { color: var(--silver-color); }
+        .supporter-rank.bronze { color: var(--bronze-color); }
+        .supporter-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin: 0 10px; border: 2px solid transparent; }
+        .supporter-item.rank-1 .supporter-avatar { border-color: var(--gold-color); }
+        .supporter-item.rank-2 .supporter-avatar { border-color: var(--silver-color); }
+        .supporter-item.rank-3 .supporter-avatar { border-color: var(--bronze-color); }
+        .supporter-info { flex-grow: 1; overflow: hidden; }
+        .supporter-name { font-weight: bold; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .supporter-score { font-size: 0.9rem; color: #ccc; display: flex; align-items: center; gap: 3px; }
+        .supporter-score i { color: var(--gold-color); }
+
+        .pk-clash-bar { width: 100%; padding: 10px 0; position: relative; display: flex; flex-direction: column; align-items: center; margin-top: 10px; margin-bottom: 0; }
+        .pk-progress-container { width: 100%; height: 28px; background-color: var(--pk-bar-bg); border-radius: 50px; display: flex; position: relative; overflow: hidden; }
+        .pk-progress-bar { height: 100%; transition: width 0.5s ease; display: flex; align-items: center; font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        .pk-progress-bar.host { background-color: var(--pk-host-color); justify-content: flex-start; padding-right: 20px; }
+        .pk-progress-bar.challenger { background-color: var(--pk-challenger-color); justify-content: flex-end; padding-left: 20px; }
+        .pk-clash-icons { position: absolute; width: 100%; top: -5px; height: 30px; pointer-events: none; }
+        .pk-clash-icon { position: absolute; font-size: 2.2rem; transition: transform 0.5s ease; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .pk-clash-icon.host { color: var(--pk-host-color); }
+        .pk-clash-icon.challenger { color: var(--pk-challenger-color); }
+        .pk-timer-box { display: flex; align-items: center; gap: 15px; margin-top: 5px; }
+        .pk-timer-box .timer { font-size: 1rem; font-weight: bold; }
+        .pk-timer-box .icon { font-size: 1.2rem; }
+        .pk-timer-box .icon.host { color: var(--pk-host-color); }
+        .pk-timer-box .icon.challenger { color: var(--pk-challenger-color); }
+        .pk-video-grid { flex-grow: 1; display: flex; gap: 0; width: 100%; }
+        .pk-video-wrapper { width: 50%; height: 100%; background-color: #000; position: relative; border: 2px solid transparent; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .pk-video-wrapper.host { border-color: var(--pk-host-color); border-radius: 0 10px 10px 0; }
+        .pk-video-wrapper.challenger { border-color: var(--pk-challenger-color); border-radius: 10px 0 0 10px; }
+        .pk-result-overlay { position: absolute; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 20; }
+        .pk-result-overlay.show { opacity: 1; pointer-events: all; }
+        .pk-result-text { font-size: 3rem; font-weight: bold; text-transform: uppercase; transform: scale(0.5); opacity: 0; animation: result-animation 0.8s forwards; }
+        .pk-result-sticker { font-size: 4rem; transform: scale(0.5); opacity: 0; animation: result-animation 0.8s forwards; animation-delay: 0.2s; }
+        .pk-result-overlay.winner .pk-result-text { color: var(--gold-color); text-shadow: 0 0 15px var(--gold-color); }
+        .pk-result-overlay.loser .pk-result-text { color: #a0a0a0; }
+        @keyframes result-animation { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #restart-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; font-size: 1rem; font-weight: bold; color: white; background-color: #28a745; border: none; border-radius: 50px; cursor: pointer; z-index: 30; display: none; }
+        .chat-section { height: 250px; background-color: var(--secondary-bg); display: flex; flex-direction: column; border-top: 1px solid #333; }
+        .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; }
+        .chat-message { margin-bottom: 8px; padding: 8px 12px; border-radius: 10px; background-color: rgba(255,255,255,0.05); width: fit-content; }
+        .chat-message.streak { background-color: rgba(255, 152, 0, 0.2); border: 1px solid var(--streak-color); font-weight: bold; }
+        .chat-message.streak .streak-count { color: var(--streak-color); font-size: 1.2em; margin-left: 5px; }
+        .chat-input-container { display: flex; padding: 10px; align-items: center; }
+        .chat-input-field { flex-grow: 1; background-color: #333; border: none; border-radius: 50px; padding: 10px 15px; color: white; }
+        .icon-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; margin: 0 5px; transition: opacity 0.3s; }
+        .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .gifts-panel-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 99; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-out; }
+        .gifts-panel-overlay.show { opacity: 1; pointer-events: all; }
+        .gifts-panel { width: 100%; max-height: 60%; background-color: var(--secondary-bg); border-radius: 20px 20px 0 0; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .gifts-panel-overlay.show .gifts-panel { transform: translateY(0); }
+        .gifts-tabs { display: flex; border-bottom: 1px solid #444; }
+        .gift-tab { padding: 10px 20px; cursor: pointer; color: #888; font-weight: bold; position: relative; display: flex; align-items: center; gap: 5px; }
+        .gift-tab.active { color: var(--gold-color); }
+        .gift-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: var(--gold-color); }
+        .gifts-content { flex-grow: 1; overflow-y: auto; padding: 15px; }
+        .gifts-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 15px; }
+        .gifts-grid.active { display: grid; }
+        .gift-item { background-color: var(--tertiary-bg); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .gift-item:hover { transform: translateY(-3px); }
+        .gift-item.selected { border-color: var(--gold-color); background-color: #444; }
+        .gift-item .gift-icon { font-size: 2.5rem; line-height: 1; margin-bottom: 5px; }
+        .gift-item .gift-icon img { width: 45px; height: 45px; }
+        .gift-item .gift-name { font-size: 0.8rem; margin-top: 5px; }
+        .gift-item .gift-price { font-size: 0.75rem; color: var(--gold-color); display: flex; align-items: center; justify-content: center; gap: 3px; }
+        .gift-item .gift-price i { font-size: 0.7rem; }
+        .gifts-footer { padding: 10px 15px; border-top: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        .coin-balance { font-weight: bold; }
+        .coin-balance i { color: var(--gold-color); }
+        .send-target-selector { display: none; }
+        .send-target-selector.show { display: flex; gap: 10px; }
+        .target-btn { padding: 8px 20px; border-radius: 50px; border: 1px solid; cursor: pointer; font-weight: bold; }
+        .target-btn.host { border-color: var(--pk-host-color); color: var(--pk-host-color); }
+        .target-btn.challenger { border-color: var(--pk-challenger-color); color: var(--pk-challenger-color); }
+        #central-animation-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 101; pointer-events: none; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .central-animation-content { display: none; text-align: center; animation: central-fade-in-out 5s forwards; }
+        .central-animation-content .icon { font-size: 150px; line-height: 1; text-shadow: 0 0 30px rgba(255, 255, 255, 0.5); }
+        .central-animation-content .name { font-size: 2rem; font-weight: bold; margin-top: 15px; color: var(--gold-color); }
+        @keyframes central-fade-in-out { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.1); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0; } }
+        #castle-effect { width: 100%; height: 100%; position: absolute; display: none; }
+        #castle-effect .castle-icon { font-size: 200px; position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%) scale(0); animation: build-castle 4s ease-out forwards; }
+        @keyframes build-castle { 0% { transform: translateX(-50%) scale(0) translateY(100px); opacity: 0; } 50% { transform: translateX(-50%) scale(1.2) translateY(0); opacity: 1; } 80% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; } 100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 0; } }
+        .gift-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .effect-particle { position: absolute; font-size: 2rem; animation: fade-out-up 2s ease-out forwards; }
+        @keyframes fade-out-up { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(-150px) scale(0.5); opacity: 0; } }
+        .fire-particle { font-size: 2.5rem; animation: fire-flicker 1.5s ease-in-out forwards; }
+        @keyframes fire-flicker { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 50% { transform: translateY(-80px) scale(1.2); opacity: 0.8; } 100% { transform: translateY(-200px) scale(0.2); opacity: 0; } }
+        .star-particle { animation: star-twinkle 1.8s ease-out forwards; }
+        @keyframes star-twinkle { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.5); opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="stream-section">
+            <div class="pk-mode-container">
+                
+                <!-- <<< الشريط العلوي الجديد >>> -->
+                <div class="top-info-bar" id="top-info-bar">
+                    <div class="viewer-count">
+                        <i class="bi bi-eye-fill"></i>
+                        <span>1.1K</span>
+                    </div>
+                    <div id="open-supporters-btn">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                </div>
+
+                <div id="streak-war-overlay">
+                    <div class="war-participant p1">
+                        <img src="https://i.pravatar.cc/150?img=1" alt="Participant 1" class="war-avatar" id="war-p1-avatar">
+                        <div class="war-info">
+                            <div class="war-name" id="war-p1-name">سلطان</div>
+                            <!-- <<< عداد الدعم الجديد >>> -->
+                            <div class="war-gift-count" id="war-p1-gift-count">0</div>
+                        </div>
+                    </div>
+                    <div class="war-vs-icon">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <div class="war-participant p2">
+                        <div class="war-info">
+                            <div class="war-name" id="war-p2-name">نورة</div>
+                            <!-- <<< عداد الدعم الجديد >>> -->
+                            <div class="war-gift-count" id="war-p2-gift-count">0</div>
+                        </div>
+                        <img src="https://i.pravatar.cc/150?img=2" alt="Participant 2" class="war-avatar" id="war-p2-avatar">
+                    </div>
+                </div>
+
+                <div class="pk-clash-bar">
+                    <div class="pk-clash-icons">
+                        <i class="bi bi-heart-fill pk-clash-icon host" id="host-clash-icon"></i>
+                        <i class="bi bi-star-fill pk-clash-icon challenger" id="challenger-clash-icon"></i>
+                    </div>
+                    <div class="pk-progress-container">
+                        <div class="pk-progress-bar host" id="host-progress-bar"><span id="host-score-display"></span></div>
+                        <div class="pk-progress-bar challenger" id="challenger-progress-bar"><span id="challenger-score-display"></span></div>
+                    </div>
+                    <div class="pk-timer-box">
+                        <i class="bi bi-hand-thumbs-up-fill icon host"></i>
+                        <span class="timer" id="pk-timer">00:31</span>
+                        <i class="bi bi-hand-thumbs-up-fill icon challenger"></i>
+                    </div>
+                </div>
+
+                <div class="pk-video-grid">
+                    <div class="pk-video-wrapper host" id="host-video">
+                        <div class="pk-result-overlay" id="host-result"><span class="pk-result-text"></span><span class="pk-result-sticker"></span></div>
+                        <div class="gift-effect-overlay" id="host-gift-effects"></div>
+                    </div>
+                    <div class="pk-video-wrapper challenger" id="challenger-video">
+                        <div class="pk-result-overlay" id="challenger-result"><span class="pk-result-text"></span><span class="pk-result-sticker"></span></div>
+                        <div class="gift-effect-overlay" id="challenger-gift-effects"></div>
+                    </div>
+                </div>
+            </div>
+            <button id="restart-btn">إعادة التحدي</button>
+        </div>
+        <div class="chat-section">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-container">
+                <button class="icon-btn" id="open-gifts-btn"><i class="bi bi-gift-fill"></i></button>
+                <input type="text" class="chat-input-field" placeholder="اكتب...">
+                <button class="icon-btn"><i class="bi bi-send-fill"></i></button>
+            </div>
+        </div>
+
+        <div class="gifts-panel-overlay" id="gifts-panel-overlay">
+            <div class="gifts-panel">
+                <div class="gifts-tabs" id="gifts-tabs"></div>
+                <div class="gifts-content" id="gifts-content"></div>
+                <div class="gifts-footer">
+                    <div class="coin-balance"><i class="bi bi-coin"></i><span id="coin-balance"></span></div>
+                    <div class="send-target-selector" id="send-target-selector">
+                        <button class="target-btn host" data-target="host">للمضيف</button>
+                        <button class="target-btn challenger" data-target="challenger">للمنافس</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="supporters-popup-overlay" id="supporters-popup-overlay">
+            <div class="supporters-popup">
+                <div id="close-supporters-btn"><i class="bi bi-x-lg"></i></div>
+                <div class="popup-header">🏆 قائمة الداعمين 🏆</div>
+                <div id="supporters-popup-list"></div>
+            </div>
+        </div>
+
+        <div id="central-animation-overlay">
+            <div class="central-animation-content" id="central-animation-content">
+                <div class="icon" id="central-animation-icon"></div>
+                <div class="name" id="central-animation-name"></div>
+            </div>
+            <div id="castle-effect">
+                <div class="castle-icon">🏰</div>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- تعريف العناصر ---
+    const elements = {
+        topInfoBar: document.getElementById('top-info-bar'),
+        hostScoreDisplay: document.getElementById('host-score-display'),
+        challengerScoreDisplay: document.getElementById('challenger-score-display'),
+        hostProgressBar: document.getElementById('host-progress-bar'),
+        challengerProgressBar: document.getElementById('challenger-progress-bar'),
+        hostClashIcon: document.getElementById('host-clash-icon'),
+        challengerClashIcon: document.getElementById('challenger-clash-icon'),
+        pkTimer: document.getElementById('pk-timer'),
+        hostResultOverlay: document.getElementById('host-result'),
+        challengerResultOverlay: document.getElementById('challenger-result'),
+        restartBtn: document.getElementById('restart-btn'),
+        openGiftsBtn: document.getElementById('open-gifts-btn'),
+        giftsPanelOverlay: document.getElementById('gifts-panel-overlay'),
+        giftsTabs: document.getElementById('gifts-tabs'),
+        giftsContent: document.getElementById('gifts-content'),
+        coinBalanceDisplay: document.getElementById('coin-balance'),
+        sendTargetSelector: document.getElementById('send-target-selector'),
+        hostGiftEffects: document.getElementById('host-gift-effects'),
+        challengerGiftEffects: document.getElementById('challenger-gift-effects'),
+        chatMessages: document.getElementById('chat-messages'),
+        openSupportersBtn: document.getElementById('open-supporters-btn'),
+        supportersPopupOverlay: document.getElementById('supporters-popup-overlay'),
+        supportersPopupList: document.getElementById('supporters-popup-list'),
+        closeSupportersBtn: document.getElementById('close-supporters-btn'),
+        streakWarOverlay: document.getElementById('streak-war-overlay'),
+        warP1: { avatar: document.getElementById('war-p1-avatar'), name: document.getElementById('war-p1-name'), giftCount: document.getElementById('war-p1-gift-count') },
+        warP2: { avatar: document.getElementById('war-p2-avatar'), name: document.getElementById('war-p2-name'), giftCount: document.getElementById('war-p2-gift-count') },
+        centralAnimationOverlay: document.getElementById('central-animation-overlay'),
+        centralAnimationContent: document.getElementById('central-animation-content'),
+        centralAnimationIcon: document.getElementById('central-animation-icon'),
+        centralAnimationName: document.getElementById('central-animation-name'),
+        castleEffect: document.getElementById('castle-effect'),
+    };
+
+    // --- حالة التطبيق ---
+    let state = {
+        hostScore: 0,
+        challengerScore: 0,
+        timerInterval: null,
+        timeLeft: 60,
+        isChallengeActive: false,
+        selectedGift: null,
+        coinBalance: 1250000,
+        supporters: {},
+        streaks: {},
+        streakWar: { isActive: false, participants: [], timer: null, timeLeft: 30 },
+        lastGifter: null,
+        lastGiftTimestamp: 0,
+    };
+
+    // --- بيانات الهدايا ---
+    const giftsData = {
+        'فاخر': [ { id: 'l2', name: 'قلعة', price: 50000, icon: '🏰', type: 'castle' }, { id: 'l3', name: 'أسد', price: 10000, icon: '🦁', type: 'central' }, { id: 'l4', name: 'سيارة', price: 5000, icon: 'https://i.ibb.co/bXJ0vsL/lamborghini-aventador-orange.png', type: 'central' }, ],
+        'أساسي': [ { id: 'b1', name: 'نار', price: 100, icon: '🔥', type: 'fire' }, { id: 'b2', name: 'قلب', price: 10, icon: '❤️', type: 'particle' }, { id: 'b3', name: 'تاج', price: 500, icon: '👑', type: 'effect' }, { id: 'b4', name: 'ألماسة', price: 1000, icon: '💎', type: 'effect' }, ],
+        'مجاني': [ { id: 'f1', name: 'وردة', price: 0, icon: '🌹', type: 'particle' }, { id: 'f2', name: 'تصفيق', price: 0, icon: '👏', type: 'particle' }, ],
+        'موسمي': [ { id: 's1', name: 'شبح', price: 50, icon: '👻', type: 'particle' }, { id: 's2', name: 'يقطينة', price: 75, icon: '🎃', type: 'particle' }, ]
+    };
+
+    // --- وظائف التحدي ---
+    function startChallenge( ) {
+        state.hostScore = 0;
+        state.challengerScore = 0;
+        state.timeLeft = 60;
+        state.isChallengeActive = true;
+        state.supporters = {};
+        state.streaks = {};
+        state.streakWar.isActive = false;
+        elements.hostResultOverlay.classList.remove('show', 'winner', 'loser');
+        elements.challengerResultOverlay.classList.remove('show', 'winner', 'loser');
+        elements.restartBtn.style.display = 'none';
+        elements.openGiftsBtn.disabled = false;
+        elements.streakWarOverlay.classList.remove('show');
+        elements.topInfoBar.classList.add('show');
+        setTimeout(() => elements.topInfoBar.classList.remove('show'), 10000);
+        updateScoreUI();
+        updateSupportersUI();
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(() => {
+            state.timeLeft--;
+            const minutes = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
+            const seconds = (state.timeLeft % 60).toString().padStart(2, '0');
+            elements.pkTimer.textContent = `${minutes}:${seconds}`;
+            if (state.timeLeft <= 0) endChallenge();
+        }, 1000);
+    }
+
+    function endChallenge() {
+        clearInterval(state.timerInterval);
+        state.isChallengeActive = false;
+        elements.openGiftsBtn.disabled = true;
+        const hostResult = elements.hostResultOverlay;
+        const challengerResult = elements.challengerResultOverlay;
+        if (state.hostScore > state.challengerScore) {
+            hostResult.classList.add('show', 'winner');
+            hostResult.querySelector('.pk-result-text').textContent = 'WINNER';
+            hostResult.querySelector('.pk-result-sticker').textContent = '😎';
+            challengerResult.classList.add('show', 'loser');
+            challengerResult.querySelector('.pk-result-text').textContent = 'GOOD LUCK';
+            challengerResult.querySelector('.pk-result-sticker').textContent = '😢';
+        } else if (state.challengerScore > state.hostScore) {
+            challengerResult.classList.add('show', 'winner');
+            challengerResult.querySelector('.pk-result-text').textContent = 'WINNER';
+            challengerResult.querySelector('.pk-result-sticker').textContent = '😎';
+            hostResult.classList.add('show', 'loser');
+            hostResult.querySelector('.pk-result-text').textContent = 'GOOD LUCK';
+            hostResult.querySelector('.pk-result-sticker').textContent = '😢';
+        } else {
+            hostResult.classList.add('show', 'loser');
+            hostResult.querySelector('.pk-result-text').textContent = 'DRAW';
+            challengerResult.classList.add('show', 'loser');
+            challengerResult.querySelector('.pk-result-text').textContent = 'DRAW';
+        }
+        elements.restartBtn.style.display = 'block';
+    }
+
+    function updateScoreUI() {
+        const totalScore = state.hostScore + state.challengerScore;
+        const hostPercentage = totalScore === 0 ? 50 : (state.hostScore / totalScore) * 100;
+        elements.hostScoreDisplay.textContent = state.hostScore.toLocaleString();
+        elements.challengerScoreDisplay.textContent = state.challengerScore.toLocaleString();
+        elements.hostProgressBar.style.width = `${hostPercentage}%`;
+        elements.challengerProgressBar.style.width = `${100 - hostPercentage}%`;
+        const clashPointOffset = (hostPercentage - 50);
+        elements.hostClashIcon.style.transform = `translateX(${clashPointOffset}%)`;
+        elements.challengerClashIcon.style.transform = `translateX(${clashPointOffset}%)`;
+    }
+
+    // --- وظائف الهدايا ---
+    function populateGifts() {
+        elements.giftsTabs.innerHTML = '';
+        elements.giftsContent.innerHTML = '';
+        Object.keys(giftsData).forEach((category, index) => {
+            const tab = document.createElement('div');
+            tab.className = `gift-tab ${index === 0 ? 'active' : ''}`;
+            tab.dataset.tab = category;
+            tab.textContent = category;
+            elements.giftsTabs.appendChild(tab);
+            const grid = document.createElement('div');
+            grid.className = `gifts-grid ${index === 0 ? 'active' : ''}`;
+            grid.id = `gifts-grid-${category}`;
+            giftsData[category].forEach(gift => {
+                const item = document.createElement('div');
+                item.className = 'gift-item';
+                item.dataset.giftId = gift.id;
+                item.dataset.category = category;
+                const iconHtml = gift.icon.startsWith('http' ) ? `<img src="${gift.icon}" alt="${gift.name}">` : gift.icon;
+                item.innerHTML = `<div class="gift-icon">${iconHtml}</div><div class="gift-name">${gift.name}</div><div class="gift-price">${gift.price > 0 ? gift.price.toLocaleString() : 'مجاني'}${gift.price > 0 ? '<i class="bi bi-coin"></i>' : ''}</div>`;
+                item.addEventListener('click', () => selectGift(item, gift));
+                grid.appendChild(item);
+            });
+            elements.giftsContent.appendChild(grid);
+        });
+    }
+
+    function selectGift(element, gift) {
+        document.querySelectorAll('.gift-item.selected').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        state.selectedGift = gift;
+        elements.sendTargetSelector.classList.add('show');
+    }
+
+    function sendGift(target) {
+        if (!state.selectedGift || !state.isChallengeActive) return;
+        if (state.coinBalance < state.selectedGift.price) { alert('رصيدك غير كافٍ!'); return; }
+        state.coinBalance -= state.selectedGift.price;
+        elements.coinBalanceDisplay.textContent = state.coinBalance.toLocaleString();
+        if (target === 'host') {
+            state.hostScore += state.selectedGift.price;
+        } else {
+            state.challengerScore += state.selectedGift.price;
+        }
+        updateScoreUI();
+        const gifterName = "المستخدم " + Math.floor(Math.random() * 100);
+        updateSupporters(gifterName, state.selectedGift.price);
+        updateStreaks(gifterName, state.selectedGift.price);
+        playGiftAnimation(state.selectedGift, target);
+        elements.giftsPanelOverlay.classList.remove('show');
+        state.selectedGift = null;
+    }
+
+    function playGiftAnimation(gift, target) {
+        if (gift.type === 'central' || gift.type === 'castle') {
+            elements.centralAnimationOverlay.style.display = 'flex';
+            const content = elements.centralAnimationContent;
+            const icon = elements.centralAnimationIcon;
+            content.style.display = 'none';
+            elements.castleEffect.style.display = 'none';
+            if (gift.type === 'castle') {
+                elements.castleEffect.style.display = 'block';
+            } else {
+                icon.innerHTML = gift.icon.startsWith('http' ) ? `<img src="${gift.icon}">` : gift.icon;
+                elements.centralAnimationName.textContent = gift.name;
+                content.style.display = 'block';
+            }
+            setTimeout(() => { elements.centralAnimationOverlay.style.display = 'none'; }, 5000);
+        } else {
+            const targetElement = (target === 'host') ? elements.hostGiftEffects : elements.challengerGiftEffects;
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = `effect-particle ${gift.type}-particle`;
+                particle.innerHTML = gift.icon;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 0.5}s`;
+                targetElement.appendChild(particle);
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+    }
+
+    function switchTab(tabElement) {
+        document.querySelectorAll('.gift-tab.active, .gifts-grid.active').forEach(el => el.classList.remove('active'));
+        tabElement.classList.add('active');
+        const tabName = tabElement.dataset.tab;
+        document.getElementById(`gifts-grid-${tabName}`).classList.add('active');
+    }
+
+    // --- وظائف الداعمين والسلاسل المتقدمة ---
+    function updateSupporters(supporterName, amount) {
+        if (!state.supporters[supporterName]) {
+            state.supporters[supporterName] = { score: 0, avatar: `https://i.pravatar.cc/150?img=${Object.keys(state.supporters ).length + 3}` };
+        }
+        state.supporters[supporterName].score += amount;
+        updateSupportersUI();
+    }
+
+    function updateSupportersUI() {
+        const sortedSupporters = Object.entries(state.supporters).sort(([, a], [, b]) => b.score - a.score);
+        elements.supportersPopupList.innerHTML = '';
+        sortedSupporters.forEach(([name, data], index) => {
+            const rank = index + 1;
+            let rankClass = '';
+            if (rank === 1) rankClass = 'gold';
+            if (rank === 2) rankClass = 'silver';
+            if (rank === 3) rankClass = 'bronze';
+            const item = document.createElement('div');
+            item.className = `supporter-item rank-${rank}`;
+            item.innerHTML = `<span class="supporter-rank ${rankClass}">${rank}</span><img src="${data.avatar}" alt="${name}" class="supporter-avatar"><div class="supporter-info"><div class="supporter-name">${name}</div><div class="supporter-score"><i class="bi bi-coin"></i> ${data.score.toLocaleString()}</div></div>`;
+            elements.supportersPopupList.appendChild(item);
+        });
+    }
+
+    function updateStreaks(supporterName, amount) {
+        const now = Date.now();
+        if (state.streakWar.isActive) {
+            const participantIndex = state.streakWar.participants.findIndex(p => p.name === supporterName);
+            if (participantIndex !== -1) {
+                state.streakWar.participants[participantIndex].giftsSent += amount;
+            } else {
+                const lowestParticipant = state.streakWar.participants.reduce((min, p) => p.giftsSent < min.giftsSent ? p : min);
+                if (amount > lowestParticipant.giftsSent) {
+                    const newParticipant = { name: supporterName, avatar: state.supporters[supporterName].avatar, giftsSent: amount };
+                    const indexToReplace = state.streakWar.participants.findIndex(p => p.name === lowestParticipant.name);
+                    state.streakWar.participants[indexToReplace] = newParticipant;
+                }
+            }
+            updateStreakWarUI();
+            return;
+        }
+        if (state.lastGifter && state.lastGifter !== supporterName && (now - state.lastGiftTimestamp) < 10000) {
+            startStreakWar(state.lastGifter, supporterName, amount);
+        }
+        state.lastGifter = supporterName;
+        state.lastGiftTimestamp = now;
+    }
+
+    function startStreakWar(p1Name, p2Name, p2Amount) {
+        state.streakWar.isActive = true;
+        state.streakWar.timeLeft = 30;
+        const p1Data = state.supporters[p1Name] || { avatar: 'https://i.pravatar.cc/150?img=1' };
+        const p2Data = state.supporters[p2Name] || { avatar: 'https://i.pravatar.cc/150?img=2' };
+        state.streakWar.participants = [
+            { name: p1Name, avatar: p1Data.avatar, giftsSent: 0 },
+            { name: p2Name, avatar: p2Data.avatar, giftsSent: p2Amount }
+        ];
+        updateStreakWarUI( );
+        elements.streakWarOverlay.classList.add('show');
+        state.streakWar.timer = setInterval(() => {
+            state.streakWar.timeLeft--;
+            if (state.streakWar.timeLeft <= 0) endStreakWar();
+        }, 1000);
+    }
+
+    function endStreakWar() {
+        clearInterval(state.streakWar.timer);
+        const winner = state.streakWar.participants.reduce((max, p) => p.giftsSent > max.giftsSent ? p : max);
+        const message = document.createElement('div');
+        message.className = 'chat-message streak-war-winner';
+        message.innerHTML = `🎉 ${winner.name} فاز في حرب السلاسل! 🎉`;
+        elements.chatMessages.appendChild(message);
+        setTimeout(() => {
+            elements.streakWarOverlay.classList.remove('show');
+            state.streakWar.isActive = false;
+        }, 5000);
+    }
+
+    function updateStreakWarUI() {
+        const [p1, p2] = state.streakWar.participants;
+        elements.warP1.avatar.src = p1.avatar;
+        elements.warP1.name.textContent = p1.name;
+        elements.warP1.giftCount.textContent = p1.giftsSent.toLocaleString();
+        elements.warP2.avatar.src = p2.avatar;
+        elements.warP2.name.textContent = p2.name;
+        elements.warP2.giftCount.textContent = p2.giftsSent.toLocaleString();
+    }
+
+    // --- ربط الأحداث ---
+    elements.restartBtn.addEventListener('click', startChallenge);
+    elements.openGiftsBtn.addEventListener('click', () => elements.giftsPanelOverlay.classList.add('show'));
+    elements.giftsPanelOverlay.addEventListener('click', (e) => { if (e.target === elements.giftsPanelOverlay) elements.giftsPanelOverlay.classList.remove('show'); });
+    elements.sendTargetSelector.addEventListener('click', (e) => { if (e.target.classList.contains('target-btn')) sendGift(e.target.dataset.target); });
+    elements.giftsTabs.addEventListener('click', (e) => { if (e.target.classList.contains('gift-tab')) switchTab(e.target); });
+    elements.openSupportersBtn.addEventListener('click', () => elements.supportersPopupOverlay.classList.add('show'));
+    elements.closeSupportersBtn.addEventListener('click', () => elements.supportersPopupOverlay.classList.remove('show'));
+    elements.supportersPopupOverlay.addEventListener('click', (e) => { if (e.target === elements.supportersPopupOverlay) elements.supportersPopupOverlay.classList.remove('show'); });
+
+    // --- بدء التشغيل ---
+    populateGifts();
+    startChallenge();
+});
+</script>
+
+</body>
+</html>

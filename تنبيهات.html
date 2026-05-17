@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التنبيهات المطور</title>
+    <style>
+        /* --- CSS Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-right 0.5s ease; /* لإضافة حركة ناعمة عند فتح النافذة */
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* --- أزرار التحكم الرئيسية --- */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            color: white;
+        }
+
+        #add-notification-btn {
+            background-color: #007bff;
+        }
+
+        #toggle-center-btn {
+            background-color: #ffc107;
+            color: #333;
+            position: relative;
+        }
+        
+        #notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* --- حاوية التنبيهات المنبثقة (الجديدة) --- */
+        #popup-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification-popup {
+            background-color: #fff;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInPopup 0.5s ease-out, fadeOutPopup 0.5s ease-in 4.5s forwards;
+            min-width: 250px;
+        }
+
+        @keyframes slideInPopup {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOutPopup {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+
+        /* --- مركز التنبيهات (النافذة التي تنزلق من اليمين) --- */
+        #notification-center {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 350px; /* عرض النافذة الجانبية */
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            z-index: 2000;
+            transform: translateX(100%); /* إخفاء النافذة خارج الشاشة إلى اليمين */
+            transition: transform 0.5s ease; /* حركة الانزلاق */
+            display: flex;
+            flex-direction: column;
+        }
+
+        #notification-center.open {
+            transform: translateX(0); /* إظهار النافذة */
+        }
+        
+        /* --- غطاء خلفي لتعتيم الصفحة --- */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            z-index: 1999; /* خلف النافذة ولكن فوق المحتوى */
+        }
+        
+        #overlay.show {
+            display: block;
+        }
+
+        /* --- محتوى مركز التنبيهات --- */
+        #notification-center-content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        /* --- هذا هو المكان الذي ستضع فيه تصميمك --- */
+        /* --- مثال للتوضيح فقط --- */
+        .my-custom-window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+        .my-custom-window-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .close-btn {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .my-custom-window-body {
+            padding: 10px;
+        }
+        #archived-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .archived-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #no-notifications-msg {
+            text-align: center;
+            color: #6c757d;
+            padding: 50px 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>نظام التنبيهات</h1>
+    <div class="controls">
+        <button id="add-notification-btn" class="control-btn">إضافة تنبيه جديد</button>
+        <button id="toggle-center-btn" class="control-btn">
+            فتح مركز التنبيهات
+            <span id="notification-count">0</span>
+        </button>
+    </div>
+
+    <div id="popup-container"></div>
+    <div id="overlay"></div>
+
+    <!-- مركز التنبيهات (النافذة الجانبية) -->
+    <div id="notification-center">
+        <div id="notification-center-content">
+            <!-- =============================================== -->
+            <!--      !!! ضع تصميم نافذتك الخاصة هنا !!!         -->
+            <!-- =============================================== -->
+            
+            <!-- هذا مجرد مثال، استبدله بكودك -->
+            <div class="my-custom-window-header">
+                <h2>نافذتي الخاصة</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="my-custom-window-body">
+                <p id="no-notifications-msg">لا توجد تنبيهات محفوظة.</p>
+                <ul id="archived-list">
+                    <!-- التنبيهات تظهر هنا -->
+                </ul>
+            </div>
+            <!-- نهاية المثال -->
+
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const addBtn = document.getElementById('add-notification-btn');
+        const toggleCenterBtn = document.getElementById('toggle-center-btn');
+        const notificationCenter = document.getElementById('notification-center');
+        const overlay = document.getElementById('overlay');
+        const popupContainer = document.getElementById('popup-container');
+        const archivedList = document.getElementById('archived-list');
+        const noNotificationsMsg = document.getElementById('no-notifications-msg');
+        const notificationCountBadge = document.getElementById('notification-count');
+
+        // مهم: ابحث عن زر الإغلاق داخل تصميمك الخاص
+        const closeCenterBtn = notificationCenter.querySelector('.close-btn');
+
+        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+
+        const saveNotifications = () => {
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            updateUI();
+        };
+
+        const updateUI = () => {
+            archivedList.innerHTML = '';
+            if (notifications.length === 0) {
+                noNotificationsMsg.style.display = 'block';
+                notificationCountBadge.style.display = 'none';
+            } else {
+                noNotificationsMsg.style.display = 'none';
+                notificationCountBadge.style.display = 'inline-block';
+                notificationCountBadge.textContent = notifications.length;
+                notifications.forEach(notification => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'archived-item';
+                    listItem.innerHTML = `
+                        <span>${notification.text}</span>
+                        <button class="delete-btn" data-id="${notification.id}">حذف</button>
+                    `;
+                    archivedList.appendChild(listItem);
+                });
+            }
+        };
+
+        const showPopup = (text) => {
+            const popup = document.createElement('div');
+            popup.className = 'notification-popup';
+            popup.textContent = text;
+            popupContainer.appendChild(popup);
+            setTimeout(() => popup.remove(), 5000);
+        };
+
+        const addNotification = () => {
+            const newNotification = {
+                id: Date.now(),
+                text: `هذا هو التنبيه رقم ${notifications.length + 1}`
+            };
+            notifications.unshift(newNotification);
+            saveNotifications();
+            showPopup(newNotification.text);
+        };
+
+        const deleteNotification = (id) => {
+            const notificationId = parseInt(id, 10);
+            notifications = notifications.filter(n => n.id !== notificationId);
+            saveNotifications();
+        };
+        
+        const openCenter = () => {
+            updateUI();
+            notificationCenter.classList.add('open');
+            overlay.classList.add('show');
+        };
+        
+        const closeCenter = () => {
+            notificationCenter.classList.remove('open');
+            overlay.classList.remove('show');
+        };
+
+        addBtn.addEventListener('click', addNotification);
+        toggleCenterBtn.addEventListener('click', openCenter);
+        
+        // تأكد من أن زر الإغلاق موجود قبل إضافة الحدث
+        if(closeCenterBtn) {
+            closeCenterBtn.addEventListener('click', closeCenter);
+        }
+        
+        overlay.addEventListener('click', closeCenter);
+
+        archivedList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const idToDelete = e.target.getAttribute('data-id');
+                deleteNotification(idToDelete);
+            }
+        });
+
+        updateUI();
+    });
+    </script>
+
+</body>
+</html>

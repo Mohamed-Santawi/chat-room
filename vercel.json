@@ -1,0 +1,19 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/portal.html" },
+    { "source": "/chat", "destination": "/index.html" },
+    { "source": "/rooms", "destination": "/الغرف HD.html" },
+    { "source": "/live", "destination": "/بث مباشر.html" },
+    { "source": "/alerts", "destination": "/تنبيه2.html" },
+    { "source": "/notifications", "destination": "/تنبيهات.html" },
+    { "source": "/wall", "destination": "/جدار الرائع.html" },
+    { "source": "/private", "destination": "/خاص جديد.html" },
+    { "source": "/admin", "destination": "/لوحة م جداديا.html" },
+    { "source": "/gifts", "destination": "/مبمررمnoname(42).html" },
+    { "source": "/online", "destination": "/متواجدين HD.html" },
+    { "source": "/profile", "destination": "/محدث ملف.html" },
+    { "source": "/stream", "destination": "/noname(43).html" },
+    { "source": "/(.*)", "destination": "/portal.html" }
+  ]
+}

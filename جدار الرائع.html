@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ملتقى النخبة - تخطيط 80%</title>
+    <style>
+        /* نفس كود التصميم الدقيق السابق */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
+        :root {
+            --app-bg: #EAEAEA; --card-bg: #FFFFFF; --text-primary: #000000;
+            --text-secondary: #555555; --like-red: #FF1A1A; --button-black: #222222;
+            --send-blue: #1a73e8; --border-color: #E0E0E0;
+        }
+        body {
+            font-family: 'Tajawal', sans-serif; margin: 0; padding: 0;
+            background-color: var(--app-bg); color: var(--text-primary);
+            display: flex; /* [العودة للتخطيط المقسم] */
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* [التعديل] الحاوية الرئيسية الآن عرضها 80% */
+        .main-hub {
+            width: 80%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-left: 1px solid var(--border-color); /* خط فاصل */
+        }
+
+        /* [جديد] اللوحة الجانبية الفارغة (20%) */
+        .side-panel {
+            width: 20%;
+            height: 100%;
+            /* يمكن إضافة محتوى هنا لاحقًا */
+        }
+
+        /* لوحة اليوتيوب العلوية */
+        .youtube-panel {
+            background-color: #fff;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+        .youtube-panel input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .youtube-panel button {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .wall-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 12px 8px 100px 8px;
+        }
+
+        /* --- نفس تصميم البطاقات الدقيق --- */
+        .post-card {
+            background-color: var(--card-bg); border-radius: 12px; margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;
+        }
+        .post-card::before, .post-card::after {
+            content: ''; position: absolute; width: 0; height: 0; border-style: solid;
+            opacity: 0.15; z-index: 0;
+        }
+        .post-card::before { top: 0; left: 0; border-width: 50px 50px 0 0; border-color: #888 transparent transparent transparent; }
+        .post-card::after { bottom: 0; right: 0; border-width: 0 0 50px 50px; border-color: transparent transparent #888 transparent; }
+        .post-header, .post-content, .post-footer { position: relative; z-index: 1; }
+        .post-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-info img { width: 34px; height: 34px; border-radius: 50%; }
+        .decorated-name { background-color: var(--button-black); color: white; padding: 4px 12px; border-radius: 16px; font-size: 15px; font-weight: 700; }
+        .post-time { font-size: 11px; color: var(--text-secondary); }
+        .post-content { padding: 5px 15px 12px 15px; font-size: 15px; line-height: 1.6; font-weight: 500; }
+        .post-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 12px 12px 12px; }
+        .actions { display: flex; gap: 6px; }
+        .action-button { display: flex; align-items: center; justify-content: center; background-color: var(--button-black); color: white; border: none; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .like-button { background-color: var(--like-red); gap: 4px; padding: 5px 12px; }
+        .like-button .icon { font-size: 16px; line-height: 1; }
+        .delete-button { padding: 6px 8px; }
+
+        /* --- الشريط السفلي --- */
+        .bottom-bar {
+            background-color: #F1F3F4; border-top: 1px solid #DCDCDC;
+            padding: 8px;
+        }
+        .input-wrapper { display: flex; align-items: center; gap: 8px; }
+        .input-wrapper input { flex-grow: 1; background-color: var(--card-bg); border: 1px solid #DCDCDC; border-radius: 18px; padding: 8px 14px; color: var(--text-primary); font-size: 14px; font-family: 'Tajawal', sans-serif; }
+        .input-wrapper input:focus { outline: none; border-color: #B0B0B0; }
+        .send-button { background-color: var(--send-blue); border: none; border-radius: 50%; width: 40px; height: 40px; min-width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .send-button svg { width: 20px; height: 20px; fill: white; transform: scaleX(-1) translateX(-1px); }
+
+        /* نافذة التعليقات (الدردشة المصغرة) */
+        .comments-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .comments-modal {
+            background-color: #fff; width: 90%; max-width: 500px;
+            border-radius: 12px; display: flex; flex-direction: column;
+            height: 70%;
+        }
+        .comments-header { padding: 15px; font-weight: bold; border-bottom: 1px solid var(--border-color); }
+        .comments-body { flex-grow: 1; padding: 15px; overflow-y: auto; }
+        .comment { margin-bottom: 10px; font-size: 14px; }
+        .comment b { color: #333; }
+        .comments-footer { border-top: 1px solid var(--border-color); }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-hub">
+        <div class="youtube-panel">
+            <input type="text" placeholder="ابحث في يوتيوب...">
+            <button>بحث</button>
+        </div>
+
+        <div class="wall-container">
+            <article class="post-card">
+                <div class="post-header">
+                    <div class="user-info">
+                        <img src="https://i.pravatar.cc/100?u=king" alt="User">
+                        <div class="decorated-name">👑 ...عــقــيــل</div>
+                    </div>
+                </div>
+                <p class="post-content">تم ضبط التخطيط ليكون 80% للحائط.</p>
+                <div class="post-footer">
+                    <div class="actions">
+                        <div class="action-button like-button">❤️ 0</div>
+                        <div class="action-button comment-button" onclick="openComments( )">تعليق 0</div>
+                    </div>
+                    <div class="action-button delete-button">❌</div>
+                </div>
+            </article>
+        </div>
+
+        <div class="bottom-bar">
+            <div class="input-wrapper">
+                <input type="text" placeholder="أكتب رسالتك هنا...">
+                <button class="send-button">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- اللوحة الجانبية الفارغة (20%) -->
+    <div class="side-panel">
+        <!-- هذه المساحة فارغة حاليًا كما طلبت -->
+    </div>
+
+    <!-- نافذة التعليقات (مخفية) -->
+    <div class="comments-modal-overlay" id="comments-modal">
+        <div class="comments-modal">
+            <div class="comments-header">
+                التعليقات
+                <span style="float: left; cursor: pointer;" onclick="closeComments()">✖️</span>
+            </div>
+            <div class="comments-body">
+                <div class="comment"><b>علي:</b> تعليق تجريبي أول.</div>
+                <div class="comment"><b>سارة:</b> رائع!</div>
+            </div>
+            <div class="comments-footer">
+                <div class="input-wrapper" style="padding: 8px;">
+                    <input type="text" placeholder="أضف تعليقًا...">
+                    <button class="send-button">
+                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const commentsModal = document.getElementById('comments-modal');
+        function openComments() { commentsModal.style.display = 'flex'; }
+        function closeComments() { commentsModal.style.display = 'none'; }
+        commentsModal.addEventListener('click', function(event) {
+            if (event.target === commentsModal) { closeComments(); }
+        });
+    </script>
+
+</body>
+</html>

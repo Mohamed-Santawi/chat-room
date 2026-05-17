@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقة الملف الشخصي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- ================================================================== -->
+    <!-- 2. كود CSS (مع إضافة أنماط نافذة الهدايا ) -->
+    <!-- ================================================================== -->
+    <style>
+        body {
+            background-color: #111;
+        }
+        .profile-card-container{
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,.75);
+            display:flex; align-items:center; justify-content:center;
+            z-index:1000; font-family:'Cairo', sans-serif;
+            backdrop-filter:blur(5px);
+            overflow:hidden;
+        }
+        .spotlight{
+            position:absolute; top:-10%; width:150px; height:150px;
+            background:radial-gradient(circle, rgba(0,229,255,0.2) 0%, rgba(0,229,255,0) 70%);
+            border-radius:50%; pointer-events:none;
+        }
+        .spotlight.left{left:15%}
+        .spotlight.right{right:15%}
+        .profile-card{
+            background:rgba(10,25,47,.92); border:1px solid rgba(0,255,255,.3);
+            border-radius:12px; box-shadow:0 0 35px rgba(0,255,255,.2);
+            color:#e0e0e0; position:relative; overflow:hidden;
+            width:95%; max-width:650px; padding:12px; z-index:2;
+        }
+        .close-btn-wrapper{
+            position:absolute; top:8px; left:8px; z-index:10;
+            width:28px; height:28px; border-radius:50%;
+            background:rgba(0,0,0,.2); border:1px solid rgba(255,255,255,.1);
+            display:flex; align-items:center; justify-content:center;
+        }
+        .close-btn{
+            background:transparent; border:none; color:#fff; cursor:pointer;
+            width:100%; height:100%; padding:0;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .close-btn:hover svg{transform:scale(1.2)}
+        .profile-header{
+            display:flex; align-items:center; padding-bottom:8px;
+            margin-bottom:8px; border-bottom:1px solid rgba(0,255,255,.2);
+        }
+        .profile-pic-wrapper{
+            width:50px; height:50px; border-radius:50%;
+            border:2px solid #00ffff; padding:2px; flex-shrink:0;
+        }
+        .profile-pic-wrapper img{width:100%; height:100%; border-radius:50%; object-fit:cover}
+        .profile-name-wrapper{margin-right:12px; flex-grow:1}
+        .profile-name-wrapper h3{margin:0; color:#fff; font-size:1.1rem}
+        .profile-name-wrapper span{color:#00ffff; font-size:.65rem}
+        .profile-status-message{
+            font-size:.75rem; color:#cdd6f4; margin:4px 0 0 0;
+            padding:4px 8px; background:rgba(0,255,255,.05);
+            border-radius:4px; border-left:2px solid #00ffff; font-style:italic;
+        }
+        .star-rating{margin-top:4px}
+        .star{font-size:16px; color:rgba(255,255,255,.2); transition:color .5s ease}
+        .star.filled{color:#ffd700; text-shadow:0 0 5px #ffd700,0 0 10px #ffc400}
+        .profile-progress{
+            position:relative; width:60px; height:60px;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        }
+        .progress-ring-circle,.progress-ring-circle-bg{
+            transition:.5s stroke-dashoffset; transform:rotate(-90deg);
+            transform-origin:50% 50%; fill:transparent;
+        }
+        .progress-ring-circle-bg{stroke:rgba(0,255,255,.15)}
+        .progress-ring-circle{stroke:#00ffff; stroke-linecap:round}
+        .profile-progress span{font-size:1.1rem; font-weight:700; color:#fff; z-index:1}
+        .profile-info-grid{
+            display:grid; grid-template-columns:repeat(3,1fr);
+            gap:8px; margin-bottom:8px;
+        }
+        .info-section{background:rgba(0,255,255,.05); padding:8px; border-radius:6px}
+        .info-title{
+            color:#00ffff; margin-top:0; margin-bottom:8px;
+            padding-bottom:4px; font-size:.7rem;
+            border-bottom:1px solid rgba(0,255,255,.2);
+        }
+        .info-item{
+            display:flex; justify-content:space-between;
+            font-size:.7rem; margin-bottom:4px;
+        }
+        .info-item span:first-child{color:#a8b2d1}
+        .info-item span:last-child{color:#fff; font-weight:600}
+        .profile-actions .actions-header{text-align:center; margin-bottom:8px}
+        .profile-actions .actions-header .info-title{
+            border-bottom:none; display:inline-block;
+            padding-bottom:0; position:relative;
+        }
+        .profile-actions .actions-header .info-title::after{
+            content:''; position:absolute; bottom:-2px; left:50%;
+            transform:translateX(-50%); width:50%; height:1px;
+            background-color:#00ffff;
+        }
+        .actions-grid{
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(70px,1fr));
+            gap:5px;
+        }
+        .action-btn{
+            background:0 0; border:1px solid rgba(0,255,255,.3);
+            color:#a8b2d1; padding:4px; border-radius:5px;
+            cursor:pointer; transition:all .3s ease; font-size:.65rem;
+            text-align:center; display:flex; align-items:center;
+            justify-content:center; gap:4px;
+        }
+        .action-btn:hover{background:rgba(0,255,255,.1); color:#00ffff; border-color:#00ffff}
+        .action-btn.danger{border-color:rgba(255,70,70,.5); color:#ff8a8a}
+        .action-btn.danger:hover{background:rgba(255,70,70,.1); border-color:#ff4646; color:#ff4646}
+        .action-btn.success{border-color:rgba(0,255,150,.5); color:#50ffc8}
+        .action-btn.success:hover{background:rgba(0,255,150,.1); border-color:#00ff96; color:#00ff96}
+        
+        .edit-fields-container {
+            display: none; 
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .edit-field {
+            display: flex; align-items: stretch;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 5px; overflow: hidden;
+        }
+        .edit-label {
+            background-color: #3498db; color: white;
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: center;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .edit-input {
+            flex-grow: 1; background: transparent; border: none;
+            color: #fff; padding: 5px 8px;
+            font-size: 0.8rem;
+        }
+        .edit-input:focus { outline: none; }
+        select.edit-input {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300FFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.4-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E' );
+            background-repeat: no-repeat; background-position: left 8px center;
+            background-size: 8px;
+        }
+        select.edit-input option { background-color: #0a192f; color: #fff; }
+        .edit-btn {
+            background: linear-gradient(180deg, #1b140f, #120e0a); border: 1px solid #d4af37; color: #d4af37; border-radius: 4px;
+            cursor: pointer; padding: 5px 12px;
+            font-size: 0.7rem;
+            font-weight: bold; transition: all 0.3s;
+        }
+        .edit-btn:hover { background: #d4af37; color: #0a0806; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        /* ★★★ أنماط نافذة الهدايا الجديدة ★★★ */
+        .gifts-modal {
+            display: none; /* مخفية بشكل افتراضي */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(10, 25, 47, 0.98);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            z-index: 1001; /* فوق البطاقة الشخصية */
+            padding: 15px;
+            color: #fff;
+        }
+        .gifts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .gifts-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #ffd700; /* لون ذهبي */
+        }
+        .gifts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        .gift-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+        .gift-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .gift-item img {
+            width: 100%;
+            height: auto;
+            max-height: 80px;
+            object-fit: contain;
+        }
+        /* ★★★ نهاية أنماط نافذة الهدايا ★★★ */
+
+        .line{position:absolute;background:#00ffff;box-shadow:0 0 8px #00ffff,0 0 15px #00ffff}
+        .line.top{top:0;left:0;width:100%;height:1px;animation:animate-top 4s linear infinite}
+        .line.right{top:0;right:0;width:1px;height:100%;animation:animate-right 4s linear infinite;animation-delay:1s}
+        .line.bottom{bottom:0;left:0;width:100%;height:1px;animation:animate-bottom 4s linear infinite;animation-delay:2s}
+        .line.left{top:0;left:0;width:1px;height:100%;animation:animate-left 4s linear infinite;animation-delay:3s}
+        @keyframes animate-top{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}@keyframes animate-right{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}@keyframes animate-bottom{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}@keyframes animate-left{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
+    </style>
+</head>
+<body>
+
+    <!-- ================================================================== -->
+    <!-- 1. كود HTML (مع إضافة نافذة الهدايا) -->
+    <!-- ================================================================== -->
+    <div class="profile-card-container" id="user-profile-card">
+        
+        <div class="spotlight left"></div>
+        <div class="spotlight right"></div>
+
+        <div class="profile-card">
+            <div class="line top"></div><div class="line right"></div><div class="line bottom"></div><div class="line left"></div>
+            
+            <div class="close-btn-wrapper">
+                <button class="close-btn" onclick="document.getElementById('user-profile-card').style.display='none'">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="profile-header">
+                <div class="profile-pic-wrapper"><img src="https://i.imgur.com/bZ5wA2s.jpg" alt="Profile Pic" id="profile-pic"></div>
+                <div class="profile-name-wrapper">
+                    <h3 id="profile-name">The Ghost</h3>
+                    <span id="profile-rank">مراقب النظام</span>
+                    <div class="star-rating" id="star-rating">
+                        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+                    </div>
+                    <p class="profile-status-message" id="profile-status-message">أحبكِ يا من تقرأين حالتي الآن ❤️</p>
+                </div>
+                <div class="profile-progress">
+                    <svg class="progress-ring" width="60" height="60"><circle class="progress-ring-circle-bg" stroke-width="5" r="25" cx="30" cy="30"/><circle class="progress-ring-circle" id="profile-progress-circle" stroke-width="5" r="25" cx="30" cy="30"/></svg>
+                    <span id="profile-progress-text">98%</span>
+                </div>
+            </div>
+            <div class="profile-info-grid">
+                <div class="info-section"><h5 class="info-title">المعلومات الأساسية</h5><div class="info-item"><span>الزخرفة:</span><span id="info-decorated-name">GHOST ☠</span></div><div class="info-item"><span>الرتبة:</span><span id="info-rank">مراقب النظام</span></div><div class="info-item"><span>البلد:</span><span id="info-country">العراق</span></div></div>
+                <div class="info-section"><h5 class="info-title">المعلومات التقنية</h5><div class="info-item"><span>الجهاز:</span><span id="info-device">Windows 11</span></div><div class="info-item"><span>الاتصال:</span><span id="info-isp-type">Fiber</span></div><div class="info-item"><span>المزود:</span><span id="info-isp">Earthlink</span></div></div>
+                <div class="info-section"><h5 class="info-title">معلومات العضوية</h5><div class="info-item"><span>الانضمام:</span><span id="info-join-date">2023-01-15</span></div><div class="info-item"><span>آخر ظهور:</span><span id="info-last-seen">منذ 5 دقائق</span></div><div class="info-item"><span>السمعة:</span><span id="info-reputation">98%</span></div></div>
+            </div>
+            
+            <div class="profile-actions">
+                <div class="actions-header">
+                    <h5 class="info-title">لوحة التحكم</h5>
+                </div>
+                <div class="actions-grid" id="actions-grid"></div>
+                
+                <div class="edit-fields-container" id="edit-fields-container">
+                    <div class="edit-field"><span class="edit-label">الزخرفة</span><input type="text" class="edit-input" id="edit-decorated-name"><button class="edit-btn">حفظ</button></div>
+                    <div class="edit-field"><span class="edit-label">لايكات</span><input type="number" class="edit-input" id="edit-likes"><button class="edit-btn">حفظ</button></div>
+                    <div class="edit-field"><span class="edit-label">الغرفة</span><select class="edit-input" id="edit-room"><option value="room1">الغرفة العامه || Room</option><option value="room2">غرفة الألعاب</option></select><button class="edit-btn">تغيير</button></div>
+                    <div class="edit-field"><span class="edit-label">الرتبة</span><select class="edit-input" id="edit-rank"><option value="admin">مراقب النظام</option><option value="vip">عضو مميز</option></select><button class="edit-btn">تغيير</button></div>
+                    <div class="edit-field"><span class="edit-label">ينتهي بعد</span><input type="number" class="edit-input" id="edit-expires-in"><button class="edit-btn">تغيير</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ★★★ نافذة الهدايا الجديدة ★★★ -->
+    <div class="gifts-modal" id="gifts-modal">
+        <div class="gifts-header">
+            <h3 class="gifts-title">سحب هدية</h3>
+            <button class="close-btn" id="close-gifts-modal">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div class="gifts-grid" id="gifts-grid-content">
+            <!-- سيتم ملء الهدايا هنا عبر JavaScript -->
+        </div>
+    </div>
+    <!-- ★★★ نهاية نافذة الهدايا ★★★ -->
+
+
+    <!-- ================================================================== -->
+    <!-- 3. كود JavaScript (مع إضافة وظائف الهدايا ) -->
+    <!-- ================================================================== -->
+    <script>
+    (function() {
+        const adminUser = {
+            is_admin: true, name: "The Ghost", rank: "مراقب النظام",
+            status_message: "أحبكِ يا من تقرأين حالتي الآن ❤️", progress: 98,
+            pic: "https://i.imgur.com/bZ5wA2s.jpg", likes: 1000000000,
+            info: {
+                decorated_name: "GHOST ☠", rank: "مراقب النظام", country: "العراق",
+                device: "Windows 11", isp_type: "Fiber", isp: "Earthlink",
+                join_date: "2023-01-15", last_seen: "منذ 5 دقائق", reputation: "98%"
+            },
+            room: "room1", expires_in: 29
+        };
+
+        // ★★★ إضافة زر "هدايا" إلى قائمة الأزرار ★★★
+        const allButtons = [
+            { id: "likes-btn", text: `❤️ ${adminUser.likes}`, class: "success" },
+            { id: "gifts-btn", text: "هدايا", class: "" }, // الزر الجديد
+            { text: "خاص", class: "" }, { text: "تنبيه", class: "" },
+            { text: "حظر", class: "danger" }, { text: "طرد", class: "danger" },
+            { text: "كتم", class: "danger" }, { text: "عزل", class: "danger" },
+            { text: "مراقبة", class: "" }, { text: "فك قيود", class: "success" },
+            { text: "تجاهل", class: "" }, { text: "توثيق", class: "success" },
+            { id: "list-btn", text: "قائمة", class: "" }
+        ];
+
+        // ★★★ قائمة صور الهدايا والبنرات (يمكنك إضافة المزيد ) ★★★
+        const giftImages = [
+            "https://i.imgur.com/U4yY3yM.png", // سيارة
+            "https://i.imgur.com/mI29p62.png", // طائرة
+            "https://i.imgur.com/tX8xXfD.png", // قلب
+            "https://i.imgur.com/a/Lp2g5j0.png", // بنر 1
+            "https://i.imgur.com/a/Lp2g5j0.png", // بنر 2
+            "https://i.imgur.com/mI29p62.png", // طائرة
+            "https://i.imgur.com/U4yY3yM.png", // سيارة
+            "https://i.imgur.com/tX8xXfD.png", // قلب
+        ];
+
+        function setStarRating(reputation ) {
+            const stars = document.querySelectorAll('#star-rating .star');
+            const repValue = parseInt(reputation);
+            let starsToFill = Math.ceil(repValue / 20);
+            stars.forEach((star, index) => {
+                star.classList.toggle('filled', index < starsToFill);
+            });
+        }
+
+        function showProfile(userData) {
+            document.getElementById('profile-pic').src = userData.pic;
+            document.getElementById('profile-name').textContent = userData.name;
+            document.getElementById('profile-rank').textContent = userData.rank;
+            document.getElementById('profile-status-message').textContent = userData.status_message;
+            
+            const progressCircle = document.getElementById('profile-progress-circle');
+            const radius = progressCircle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (userData.progress / 100) * circumference;
+            progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressCircle.style.strokeDashoffset = offset;
+            document.getElementById('profile-progress-text').textContent = `${userData.progress}%`;
+
+            for (const key in userData.info) {
+                const element = document.getElementById(`info-${key.replace(/_/g, '-')}`);
+                if (element) element.textContent = userData.info[key];
+            }
+            
+            setStarRating(userData.info.reputation);
+
+            const actionsGrid = document.getElementById('actions-grid');
+            actionsGrid.innerHTML = ''; 
+            allButtons.forEach(btn => {
+                const btnElement = document.createElement('button');
+                btnElement.className = `action-btn ${btn.class}`;
+                btnElement.innerHTML = btn.text;
+                if (btn.id) {
+                    btnElement.id = btn.id;
+                }
+                actionsGrid.appendChild(btnElement);
+            });
+
+            document.getElementById('edit-decorated-name').value = userData.info.decorated_name;
+            document.getElementById('edit-likes').value = userData.likes;
+            document.getElementById('edit-room').value = userData.room;
+            document.getElementById('edit-rank').value = (userData.rank === "مراقب النظام") ? "admin" : "vip";
+            document.getElementById('edit-expires-in').value = userData.expires_in;
+
+            // ربط وظيفة زر "قائمة" (بدون تغيير)
+            const listButton = document.getElementById('list-btn');
+            const editFieldsContainer = document.getElementById('edit-fields-container');
+            if (listButton) {
+                listButton.addEventListener('click', function() {
+                    editFieldsContainer.style.display = (editFieldsContainer.style.display === 'flex') ? 'none' : 'flex';
+                });
+            }
+
+            // ★★★ ربط وظائف نافذة الهدايا ★★★
+            const giftsModal = document.getElementById('gifts-modal');
+            const giftsButton = document.getElementById('gifts-btn');
+            const closeGiftsButton = document.getElementById('close-gifts-modal');
+            const giftsGrid = document.getElementById('gifts-grid-content');
+
+            // ملء شبكة الهدايا بالصور
+            giftsGrid.innerHTML = ''; // تفريغ المحتوى القديم
+            giftImages.forEach(imgUrl => {
+                const giftDiv = document.createElement('div');
+                giftDiv.className = 'gift-item';
+                const giftImg = document.createElement('img');
+                giftImg.src = imgUrl;
+                giftDiv.appendChild(giftImg);
+                giftsGrid.appendChild(giftDiv);
+            });
+
+            // وظيفة فتح نافذة الهدايا
+            if (giftsButton) {
+                giftsButton.addEventListener('click', () => {
+                    giftsModal.style.display = 'block';
+                });
+            }
+
+            // وظيفة إغلاق نافذة الهدايا
+            if (closeGiftsButton) {
+                closeGiftsButton.addEventListener('click', () => {
+                    giftsModal.style.display = 'none';
+                });
+            }
+            
+            document.getElementById('user-profile-card').style.display = 'flex';
+        }
+        
+        showProfile(adminUser); 
+    })();
+    </script>
+
+</body>
+</html>

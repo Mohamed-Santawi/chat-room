@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>بث مباشر متطور - معاينة واقعية (مُصحّح)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* --- (نفس كود الـ CSS السابق بدون تغيير ) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
+        :root { --primary-color: #3498db; --danger-color: #e74c3c; --warning-color: #f39c12; --success-color: #27ae60; --dark-bg: #131417; --light-bg: #1e2025; --text-light: #ecf0f1; --text-muted: #95a5a6; --gold-color: #ffd700; }
+        body { margin: 0; font-family: 'Tajawal', sans-serif; background-color: var(--dark-bg); color: var(--text-light); overflow: hidden; }
+        #live-section-wrapper { position: relative; width: 100vw; height: 100vh; background-color: #000; display: flex; flex-direction: column; overflow: hidden; }
+        #broadcast-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #videoPlayer { width: 100%; height: 100%; object-fit: cover; }
+        #overlay-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        #overlay-container > * { pointer-events: auto; }
+        #live-section-header { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); gap: 10px; }
+        .header-left { display: flex; align-items: center; background: rgba(0,0,0,0.4); border-radius: 50px; padding: 4px; }
+        .streamer-info-v2 { display: flex; align-items: center; gap: 8px; }
+        .streamer-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; }
+        .streamer-details { display: flex; flex-direction: column; color: #fff; line-height: 1.2; }
+        .streamer-name { font-weight: bold; font-size: 0.9em; }
+        .streamer-likes { font-size: 0.8em; opacity: 0.8; }
+        .streamer-likes .bi-heart-fill { color: #ff4d4d; }
+        .follow-btn { background-color: #fe2c55; color: #fff; border: none; border-radius: 20px; padding: 6px 12px; font-weight: bold; font-size: 0.9em; margin-right: 10px; cursor: pointer; }
+        .header-center { flex-grow: 1; display: flex; justify-content: center; }
+        .top-supporters-list-v2 { display: flex; align-items: center; background: rgba(0,0,0,0.4); border-radius: 50px; padding: 5px; }
+        .supporter-avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--gold-color); margin-left: -10px; }
+        .supporters-count { background-color: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 20px; padding: 4px 8px; font-size: 0.8em; margin-right: 10px; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .viewers-count { background: rgba(0,0,0,0.4); color: #fff; border-radius: 20px; padding: 6px 10px; font-size: 0.9em; display: flex; align-items: center; gap: 5px; }
+        .exit-btn { background: rgba(0,0,0,0.4); color: #fff; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.1em; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        @media (max-width: 600px) { .header-center { display: none; } }
+        #interaction-container { display: flex; flex-direction: column; justify-content: flex-end; padding: 15px; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); }
+        #messages-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column-reverse; scrollbar-width: none; -ms-overflow-style: none; }
+        #messages-wrapper::-webkit-scrollbar { display: none; }
+        #messages { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; justify-content: flex-end; }
+        .message-item { background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); padding: 8px 12px; border-radius: 15px; margin-bottom: 8px; max-width: 85%; animation: slideIn 0.3s ease-out; display: flex; align-items: center; gap: 10px; }
+        .message-avatar { width: 30px; height: 30px; border-radius: 50%; }
+        .message-content { display: flex; flex-direction: column; }
+        .message-user { font-weight: bold; font-size: 0.9em; color: var(--primary-color); }
+        .message-text { font-size: 1em; word-wrap: break-word; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #controls-container { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        #chat-form { flex-grow: 1; display: flex; }
+        #chat-input { flex-grow: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; color: #fff; padding: 10px 15px; }
+        .control-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 45px; height: 45px; border-radius: 50%; font-size: 1.5em; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .control-btn.gift-btn { background-color: var(--warning-color); border: none; }
+        #animation-container { position: absolute; bottom: 60px; right: 15px; width: 50px; height: 300px; z-index: 5; pointer-events: none; }
+        .flying-heart { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 2em; opacity: 0; animation: flyUp 4s ease-out forwards; }
+        @keyframes flyUp { 0% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--x-end), -300px) scale(0.5); opacity: 0; } }
+        #gift-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, #1e2025, #2c3e50); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1000; transform: translateY(100%); transition: transform 0.3s ease-out; display: flex; flex-direction: column; }
+        #gift-panel.show { transform: translateY(0); }
+        .gift-panel-header { padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .gift-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; padding: 15px; overflow-y: auto; flex-grow: 1; }
+        .gift-item { background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.2s ease-in-out; border: 2px solid transparent; }
+        .gift-item.selected { border-color: var(--primary-color); transform: scale(1.05); }
+        .gift-icon { font-size: 2.5em; }
+        .gift-name { font-size: 0.9em; margin-top: 5px; }
+        .gift-price { font-size: 0.8em; color: var(--gold-color); font-weight: bold; }
+        .gift-panel-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .user-balance { font-size: 0.9em; }
+        #buy-gift-btn { padding: 10px 20px; }
+        #recharge-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 2000; color: #fff; }
+        #recharge-modal .modal-content { background: linear-gradient(145deg, #2c3e50, #1a252f); padding: 25px; border-radius: 20px; width: 90%; max-width: 500px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #recharge-modal h3 { text-align: center; margin-bottom: 10px; color: var(--primary-color); }
+        .recharge-method { background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .method-header { background: rgba(0,0,0,0.3); padding: 10px 15px; font-weight: bold; }
+        .method-header i { margin-left: 10px; color: var(--primary-color); }
+        .method-body { padding: 15px; }
+        .info-box { background: #1a252f; border-radius: 8px; padding: 12px; text-align: center; font-size: 1.2em; font-weight: bold; letter-spacing: 2px; border: 1px dashed var(--primary-color); user-select: all; }
+        .qr-box { padding: 10px; }
+        .qr-box img { max-width: 150px; width: 100%; border-radius: 8px; }
+        .user-id-display { margin-top: 20px; text-align: center; }
+        .user-id-box { background-color: var(--primary-color); color: #fff; border: none; }
+    </style>
+</head>
+<body>
+
+    <div id="live-section-wrapper">
+        <div id="broadcast-container">
+            <!-- تم إضافة خاصية muted لتشغيل الفيديو تلقائياً -->
+            <video id="videoPlayer" autoplay playsinline muted loop>
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-man-in-a-suit-talking-on-a-video-call-43331-large.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- (باقي كود الـ HTML كما هو بدون تغيير ) -->
+        <div id="overlay-container">
+            <div id="live-section-header">
+                <div class="header-left">
+                    <div class="streamer-info-v2">
+                        <img src="https://i.pravatar.cc/150?img=5" alt="Streamer Avatar" class="streamer-avatar">
+                        <div class="streamer-details">
+                            <span class="streamer-name">ALRAEES الرئيس</span>
+                            <span class="streamer-likes">3.4M <i class="bi bi-heart-fill"></i></span>
+                        </div>
+                    </div>
+                    <button class="follow-btn">+ متابعة</button>
+                </div>
+                <div class="header-center">
+                    <div class="top-supporters-list-v2">
+                        <img src="https://i.pravatar.cc/150?img=10" alt="Supporter 1" class="supporter-avatar">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Supporter 2" class="supporter-avatar">
+                        <img src="https://i.pravatar.cc/150?img=12" alt="Supporter 3" class="supporter-avatar">
+                        <span class="supporters-count">70+</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="viewers-count">
+                        <i class="bi bi-eye-fill"></i>
+                        <span>4.2K</span>
+                    </div>
+                    <button class="exit-btn"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+            <div id="interaction-container">
+                <div id="messages-wrapper">
+                    <ul id="messages"></ul>
+                </div>
+                <div id="controls-container">
+                    <form id="chat-form">
+                        <input type="text" id="chat-input" placeholder="أضف تعليقاً...">
+                    </form>
+                    <button class="control-btn"><i class="bi bi-share-fill"></i></button>
+                    <button id="gift-panel-btn" class="control-btn gift-btn"><i class="bi bi-gift-fill"></i></button>
+                    <button id="like-btn" class="control-btn"><i class="bi bi-heart-fill"></i></button>
+                </div>
+            </div>
+        </div>
+        <div id="animation-container"></div>
+        <div id="gift-panel">
+            <div class="gift-panel-header">إرسال هدية</div>
+            <div class="gift-grid"></div>
+            <div class="gift-panel-footer">
+                <div class="user-balance">رصيدك: <span id="user-balance-amount">1500</span> نقطة</div>
+                <div>
+                    <button id="show-recharge-modal-btn" class="btn btn-success">شراء نقاط</button>
+                    <button id="buy-gift-btn" class="btn btn-primary" disabled>إرسال الهدية</button>
+                </div>
+            </div>
+        </div>
+        <div id="recharge-modal" style="display: none;">
+            <div class="modal-content">
+                <h3>مركز الشحن الرسمي</h3>
+                <p class="text-muted">لشحن رصيدك، يرجى استخدام إحدى الطرق التالية:</p>
+                <div class="recharge-method">
+                    <div class="method-header"><i class="bi bi-phone-fill"></i><span>عبر رصيد الهاتف</span></div>
+                    <div class="method-body">
+                        <p>يرجى تحويل الرصيد إلى الرقم التالي:</p>
+                        <div id="phone-number-box" class="info-box">+964 780 123 4567</div>
+                        <p class="mt-3">بعد التحويل، يرجى إرسال صورة الإيصال مع ID الخاص بك إلى المشرف المسؤول.</p>
+                    </div>
+                </div>
+                <div class="recharge-method">
+                    <div class="method-header"><i class="bi bi-qr-code-scan"></i><span>عبر رمز QR</span></div>
+                    <div class="method-body">
+                        <p>امسح الرمز التالي:</p>
+                        <div id="qr-code-box" class="info-box qr-box"><img src="https://i.ibb.co/G9z1wBv/qr-code-placeholder.png" alt="QR Code"></div>
+                    </div>
+                </div>
+                <div class="user-id-display">
+                    <strong>الـ ID الخاص بك هو (انسخه ):</strong>
+                    <div id="user-id-for-recharge" class="info-box user-id-box">123456789</div>
+                </div>
+                <button id="close-recharge-modal-btn" class="btn btn-secondary mt-3">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- (نفس كود الـ JavaScript السابق بدون تغيير) ---
+        const messages = document.getElementById('messages');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const likeBtn = document.getElementById('like-btn');
+        const animationContainer = document.getElementById('animation-container');
+        const giftPanelBtn = document.getElementById('gift-panel-btn');
+        const giftPanel = document.getElementById('gift-panel');
+        const giftGrid = document.querySelector('.gift-grid');
+        const buyGiftBtn = document.getElementById('buy-gift-btn');
+        const userBalanceAmount = document.getElementById('user-balance-amount');
+        let selectedGift = null;
+        let userBalance = 1500;
+        const gifts = [ { id: 1, name: 'وردة', icon: '🌹', price: 1 }, { id: 2, name: 'قلب', icon: '❤️', price: 5 }, { id: 3, name: 'كوب شاي', icon: '☕', price: 10 }, { id: 4, name: 'نجمة', icon: '⭐', price: 50 }, { id: 5, name: 'ألماسة', icon: '💎', price: 100 }, { id: 6, name: 'سيارة', icon: '🏎️', price: 500 }, { id: 7, name: 'طائرة', icon: '✈️', price: 1000 }, { id: 8, name: 'قلعة', icon: '🏰', price: 5000 }, ];
+        chatForm.addEventListener('submit', function(e) { e.preventDefault(); if (chatInput.value) { addMessage('أنت', chatInput.value, 'https://i.pravatar.cc/150?img=1' ); chatInput.value = ''; } });
+        function addMessage(user, text, avatar) { const item = document.createElement('li'); item.className = 'message-item'; item.innerHTML = `<img src="${avatar}" alt="avatar" class="message-avatar"><div class="message-content"><span class="message-user">${user}</span><span class="message-text">${text}</span></div>`; messages.prepend(item); }
+        addMessage('أحمد', 'منور يا غالي', 'https://i.pravatar.cc/150?img=2' );
+        addMessage('سارة', 'أحلى بث والله', 'https://i.pravatar.cc/150?img=3' );
+        likeBtn.addEventListener('click', () => { createFlyingHeart(); });
+        function createFlyingHeart() { const heart = document.createElement('div'); heart.className = 'flying-heart'; heart.innerHTML = '❤️'; const xEnd = (Math.random() - 0.5) * 100; heart.style.setProperty('--x-end', `${xEnd}px`); animationContainer.appendChild(heart); setTimeout(() => { heart.remove(); }, 4000); }
+        giftPanelBtn.addEventListener('click', () => { giftPanel.classList.toggle('show'); });
+        function renderGifts() { giftGrid.innerHTML = ''; gifts.forEach(gift => { const item = document.createElement('div'); item.className = 'gift-item'; item.dataset.giftId = gift.id; item.innerHTML = `<div class="gift-icon">${gift.icon}</div><div class="gift-name">${gift.name}</div><div class="gift-price">${gift.price}</div>`; item.addEventListener('click', () => selectGift(gift, item)); giftGrid.appendChild(item); }); }
+        function selectGift(gift, element) { selectedGift = gift; document.querySelectorAll('.gift-item').forEach(el => el.classList.remove('selected')); element.classList.add('selected'); buyGiftBtn.disabled = false; }
+        buyGiftBtn.addEventListener('click', () => { if (selectedGift && userBalance >= selectedGift.price) { userBalance -= selectedGift.price; userBalanceAmount.textContent = userBalance; addMessage('النظام', `شكراً لك على إرسال هدية "${selectedGift.name}"!`, 'https://i.pravatar.cc/150?img=4' ); giftPanel.classList.remove('show'); selectedGift = null; buyGiftBtn.disabled = true; } else { alert('رصيدك غير كافٍ!'); } });
+        renderGifts();
+        const showRechargeModalBtn = document.getElementById('show-recharge-modal-btn');
+        const closeRechargeModalBtn = document.getElementById('close-recharge-modal-btn');
+        const rechargeModal = document.getElementById('recharge-modal');
+        const userIdForRecharge = document.getElementById('user-id-for-recharge');
+        showRechargeModalBtn.addEventListener('click', () => { const currentUserID = "123456789"; userIdForRecharge.textContent = currentUserID; rechargeModal.style.display = 'flex'; });
+        closeRechargeModalBtn.addEventListener('click', () => { rechargeModal.style.display = 'none'; });
+        rechargeModal.addEventListener('click', (event) => { if (event.target === rechargeModal) { rechargeModal.style.display = 'none'; } });
+    </script>
+
+</body>
+</html>

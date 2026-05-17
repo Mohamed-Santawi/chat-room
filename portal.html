@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة التحكم وإطلاق منصة الدردشة الاحترافية | Chat-Room Control Panel</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0b10;
+            --bg-card: rgba(18, 20, 32, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #8a2be2;
+            --primary-glow: rgba(138, 43, 226, 0.4);
+            --accent: #ffd700;
+            --accent-glow: rgba(255, 215, 0, 0.3);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(138, 43, 226, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(255, 215, 0, 0.05) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(10, 11, 16, 1) 0%, rgba(5, 5, 8, 1) 100%);
+            background-attachment: fixed;
+            font-family: 'Tajawal', 'Outfit', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+
+        /* Ambient glowing circles */
+        .ambient-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .glow-1 { top: 15%; right: 10%; }
+        .glow-2 { bottom: 20%; left: 5%; }
+
+        header {
+            position: relative;
+            padding: 60px 20px 40px 20px;
+            text-align: center;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), #4b0082);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px var(--primary-glow);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-area i {
+            font-size: 2.2rem;
+            color: white;
+            animation: pulse-ring 2.5s infinite alternate;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); text-shadow: 0 0 0 rgba(255,255,255,0); }
+            100% { transform: scale(1.05); text-shadow: 0 0 10px rgba(255,255,255,0.6); }
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 900;
+            background: linear-gradient(120deg, #ffffff 30%, var(--accent) 70%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            line-height: 1.6;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 850px;
+            margin: 0 auto 40px auto;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item {
+            text-align: center;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .stat-item:first-child {
+            border-left: none;
+        }
+
+        [dir="ltr"] .stat-item {
+            border-left: none;
+            border-right: 1px solid var(--border-color);
+        }
+        [dir="ltr"] .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Search Filter Container */
+        .search-container {
+            max-width: 650px;
+            margin: 0 auto 50px auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-wrapper {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(12px);
+        }
+
+        .search-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .search-wrapper i {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin: 0 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 10px 10px 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        /* Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Glassmorphic Cards */
+        .module-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(15px);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(138, 43, 226, 0.3);
+            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.15);
+            background: rgba(22, 24, 40, 0.8);
+        }
+
+        .module-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .module-card:hover .icon-box {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 12px var(--primary-glow);
+            border-color: transparent;
+        }
+
+        .badge-tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .card-body {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            padding-top: 15px;
+        }
+
+        .path-label {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            color: var(--primary);
+            background: rgba(138, 43, 226, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .launch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, var(--primary), #6a1b9a);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.2);
+        }
+
+        .launch-btn:hover {
+            box-shadow: 0 6px 18px var(--primary-glow);
+            transform: scale(1.05);
+        }
+
+        .launch-btn i {
+            font-size: 0.9rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            display: none;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            z-index: 10;
+            position: relative;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <header>
+        <div class="logo-area">
+            <i class="bi bi-chat-heart-fill"></i>
+        </div>
+        <h1>بوابة تحكم وإطلاق حزمة الدردشة</h1>
+        <p class="subtitle">
+            منصة مدمجة عالية الأداء تخدم 12 قالباً متميزاً تم دمجها تحت خادم Express موحد.
+            انقر لتشغيل وتجربة أي من الوحدات التفاعلية بنقرة زر واحدة.
+        </p>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-val"><i class="bi bi-check-circle-fill" style="color: var(--success);"></i> Active</div>
+                <div class="stat-lbl">حالة الخادم | Server Status</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" id="module-count">12</div>
+                <div class="stat-lbl">عدد القوالب | Total Templates</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">3000</div>
+                <div class="stat-lbl">منفذ الاستماع | Active Port</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val"><i class="bi bi-cpu-fill" style="color: var(--accent);"></i> Node.js</div>
+                <div class="stat-lbl">البيئة المشغلة | Runtime</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" id="search" class="search-input" placeholder="ابحث عن وحدة أو قالب معين (مثال: بث، إدارة، هدايا)...">
+        </div>
+    </div>
+
+    <main class="cards-grid" id="grid">
+        <!-- 1. index.html -->
+        <div class="module-card" data-title="الدردشة الصوتية الرئيسية main chat voice" data-desc="واجهة الدردشة الصوتية والكتابية المتكاملة مع محاكاة دخول الغرف وتكامل غرف Jitsi Meet الصوتية ومؤثرات جزيئية تفاعلية">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-chat-dots-fill"></i></div>
+                <span class="badge-tag">الواجهة الرئيسية</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">الدردشة الصوتية التفاعلية</h3>
+                <p class="card-desc">واجهة الدردشة الرئيسية مع تكامل المايكات وتواصل الصوت الحي عبر Jitsi Meet ومحاكاة دخول الأعضاء.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/chat</span>
+                <a href="/chat" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 2. noname(43).html -->
+        <div class="module-card" data-title="البث التفاعلي تيك توك tiktok live stream" data-desc="واجهة البث التفاعلية المستوحاة من تيك توك مع فيديو طبيعي تفاعلي ونظام قائمة انتظار الضيوف والتعليقات والقلوب العائمة">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-play-circle-fill"></i></div>
+                <span class="badge-tag">بث اجتماعي</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">البث الاجتماعي (أسلوب تيك توك)</h3>
+                <p class="card-desc">بث مباشر تفاعلي مع فيديو خلفية رائع، قائمة انتظار لطلبات الصعود، وتلقي التعليقات والقلوب.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/stream</span>
+                <a href="/stream" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 3. لوحة م جداديا.html -->
+        <div class="module-card" data-title="لوحة الإدارة والتحكم admin control panel" data-desc="لوحة المشرفين والإدارة الكاملة للتحكم في الغرف وحظر المستخدمين وكتم الأصوات وتعديل خصائص غرف الدردشة">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-sliders"></i></div>
+                <span class="badge-tag">لوحة تحكم</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">لوحة الإدارة والتحكم</h3>
+                <p class="card-desc">لوحة متكاملة للمشرفين تتيح كتم الأعضاء، التحكم بالغرف، إرسال التنبيهات، وإدارة خصائص السيرفر بالكامل.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/admin</span>
+                <a href="/admin" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 4. بث مباشر.html -->
+        <div class="module-card" data-title="بث مباشر المايكات live audio broadcast mic seats" data-desc="شاشة البث المباشر المخصصة لإدارة مقاعد المايك والضيوف والمستمعين مع عداد تفاعلي للمشاهدين">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-broadcast"></i></div>
+                <span class="badge-tag">بث صوتي</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">بث المايكات والضيوف</h3>
+                <p class="card-desc">واجهة بث حي متطورة تعرض المايكات وتسمح بتنظيم أدوار المتحدثين في الغرف الصوتية.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/live</span>
+                <a href="/live" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 5. الغرف HD.html -->
+        <div class="module-card" data-title="مستكشف الغرف وقائمة الرومات rooms explorer list" data-desc="لوحة جانبية منزلقة تعرض قائمة الغرف والرموز التعبيرية المتحركة للأسد والدب ومستويات الأمان والقفل">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-door-open-fill"></i></div>
+                <span class="badge-tag">استكشاف الغرف</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">مستكشف الغرف HD</h3>
+                <p class="card-desc">لوحة جانبية جذابة تستعرض الرومات المتوفرة، عدد المتواجدين بداخلها، وحالة الأمان والأقفال.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/rooms</span>
+                <a href="/rooms" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 6. متواجدين HD.html -->
+        <div class="module-card" data-title="المتواجدون الآن والأعضاء النشطين active online users members" data-desc="شبكة تعرض قائمة الأعضاء المتواجدين حالياً مع أعلام الدول وحالاتهم التعبيرية وفيديوهات وتحديثات بروفايلهم">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-people-fill"></i></div>
+                <span class="badge-tag">الأعضاء</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">المتواجدون الآن HD</h3>
+                <p class="card-desc">قائمة تفاعلية بالصور والأعلام والرموز التعبيرية التي توضح حالة الأعضاء المتصلين بالدردشة.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/online</span>
+                <a href="/online" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 7. محدث ملف.html -->
+        <div class="module-card" data-title="معدل ومحدث الملف الشخصي profile editor customizer" data-desc="واجهة تعديل البروفايل، عرض الإعجابات وتثبيت البنرات التجميلية مثل السيارات والطائرات والقلوب">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-person-bounding-box"></i></div>
+                <span class="badge-tag">الملف الشخصي</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">تعديل الملف الشخصي</h3>
+                <p class="card-desc">واجهة تسمح للمستخدم بتحديث بياناته الشخصية، رفع صورة حسابه، وإظهار ممتلكاته وهداياه الفاخرة.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/profile</span>
+                <a href="/profile" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 8. مبمررمnoname(42).html -->
+        <div class="module-card" data-title="ساحة الهدايا والمسابقات gift arena battle rewards" data-desc="لوحة عرض تحديات الهدايا بين المتنافسين ونظام النقاط والداعمين والتبرع بهدايا القصور والسيارات والخيول">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-gift-fill"></i></div>
+                <span class="badge-tag">تحديات وهدايا</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">صندوق الهدايا والتحديات</h3>
+                <p class="card-desc">شاشة تفاعلية تدعم التحديات الثنائية وعرض ترتيب الداعمين وإرسال الهدايا الفاخرة كالقلاع والسيارات.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/gifts</span>
+                <a href="/gifts" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 9. خاص جديد.html -->
+        <div class="module-card" data-title="المحادثات الخاصة المصغرة private message UI chat" data-desc="واجهة نافذة المحادثة الخاصة الجميلة بمقاسات الهواتف مع شريط إدخال وسائط وكتم ورسائل مخفية">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-chat-square-text-fill"></i></div>
+                <span class="badge-tag">المحادثات الخاصة</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">المحادثة الخاصة المصغرة</h3>
+                <p class="card-desc">واجهة دردشة ثنائية خاصة مخصصة للأجهزة الذكية تمنح خصوصية كاملة وجمالية مميزة لتبادل الرسائل.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/private</span>
+                <a href="/private" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 10. تنبيهات.html -->
+        <div class="module-card" data-title="نظام تنبيهات الإشراف والتعليمات custom system alerts manager" data-desc="لوحة تحكم تفاعلية مخصصة للمشرفين لإرسال تنبيهات عامة وإشعارات منبثقة ملونة لجميع الغرف">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-bell-fill"></i></div>
+                <span class="badge-tag">لوحة التنبيهات</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">لوحة الإشعارات والنظام</h3>
+                <p class="card-desc">واجهة لإدارة وصياغة الإشعارات الفورية والتوجيهات العامة التي تظهر للمستخدمين داخل رومات الدردشة.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/notifications</span>
+                <a href="/notifications" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 11. تنبيه2.html -->
+        <div class="module-card" data-title="تنبيهات النظام المنبثقة emergency popup system alerts" data-desc="نماذج إشعارات منبثقة ملونة وقوالب جاهزة لعرض رسائل الترحيب والتحذيرات الهامة داخل الغرف">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <span class="badge-tag">قوالب تنبيه</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">تنبيهات الطوارئ المنبثقة</h3>
+                <p class="card-desc">مجموعة قوالب إشعار وتحذير مدمجة تظهر كتنبيهات منبثقة لتوجيه الأعضاء وحماية نظام الدردشة.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/alerts</span>
+                <a href="/alerts" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- 12. جدار الرائع.html -->
+        <div class="module-card" data-title="جدار التميز والتعليقات awesome walls memory notes" data-desc="جدار التميز التفاعلي لكتابة الذكريات والتعليقات والعبارات الجميلة ومشاركتها بين الأعضاء والزوار">
+            <div class="card-top">
+                <div class="icon-box"><i class="bi bi-journal-text"></i></div>
+                <span class="badge-tag">جدار التميز</span>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">جدار التميز والذكريات</h3>
+                <p class="card-desc">جدار تفاعلي مميز يسمح للمستخدمين بتسجيل عباراتهم الخالدة، تذكاراتهم، والتعليقات داخل الدردشة.</p>
+            </div>
+            <div class="card-bottom">
+                <span class="path-label">/wall</span>
+                <a href="/wall" class="launch-btn" target="_blank">تشغيل <i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+
+        <!-- Empty state element -->
+        <div class="empty-state" id="emptyState">
+            <i class="bi bi-search-heart"></i>
+            <p>لم نجد أي قالب يطابق بحثك! جرب كتابة كلمة أخرى...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 حزمة الدردشة الاحترافية الفاخرة | تم التطوير والمواءمة بنجاح</p>
+        <p>مبني باستخدام <a href="https://expressjs.com/" target="_blank">Express.js</a> و <a href="https://nodejs.org/" target="_blank">Node.js</a></p>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('search');
+        const cards = document.querySelectorAll('.module-card');
+        const emptyState = document.getElementById('emptyState');
+        const moduleCount = document.getElementById('module-count');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title').toLowerCase();
+                const desc = card.getAttribute('data-desc').toLowerCase();
+
+                if (title.includes(query) || desc.includes(query)) {
+                    card.style.display = 'flex';
+                    // Trigger dynamic stagger animation reset
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            moduleCount.innerText = visibleCount;
+
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

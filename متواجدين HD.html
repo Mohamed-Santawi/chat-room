@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المتواجدين</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
+
+        body {
+            background-color: #e9ebee;
+            font-family: 'Tajawal', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .open-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #006a4e;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .user-list-container {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 60%; /* تعديل العرض إلى 60% */
+            max-width: 360px; /* حد أقصى للحفاظ على الشكل */
+            min-width: 300px; /* حد أدنى للشاشات الصغيرة جداً */
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: right 0.4s ease-in-out;
+            z-index: 1000;
+        }
+
+        .user-list-container.open {
+            right: 0;
+        }
+
+        .header {
+            background-color: #006a4e;
+            color: white;
+            padding: 10px 15px; /* تقليل الحشو لجعل الهيدر مضغوطاً */
+            font-weight: bold;
+            font-size: 15px; /* تصغير الخط قليلاً */
+            text-align: center;
+            border-bottom: 3px solid #f0b429;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header span {
+            font-family: Arial, sans-serif;
+        }
+
+        .close-btn {
+            font-size: 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .banner {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 6px 0; /* تقليل الحشو */
+            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .banner-text {
+            display: inline-block;
+            padding-right: 100%;
+            animation: marquee 15s linear infinite;
+            font-size: 13px; /* تصغير الخط */
+        }
+
+        @keyframes marquee {
+            0%   { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .user-list-scroll-area {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 8px; /* تقليل الحشو لجعل العناصر مضغوطة */
+            border-bottom: 1px solid #f5f5f5; /* اللون الدقيق جداً للخط الفاصل */
+            position: relative;
+        }
+        
+        .user-item::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px; /* تقليل عرض الخط الجانبي */
+            background-color: #28a745;
+        }
+
+        .user-avatar {
+            width: 40px; /* تصغير الصورة الشخصية */
+            height: 40px;
+            border-radius: 6px; /* تعديل الحواف */
+            object-fit: cover;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .username-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .username {
+            background-color: #1c1e21;
+            color: white;
+            padding: 2px 10px; /* تقليل الحشو */
+            border-radius: 15px;
+            font-size: 13px; /* تصغير الخط */
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .username.nawar { background-color: #6c757d; font-family: cursive; }
+        .username.helen { background-color: #000; }
+        .username.malak { background-color: #000; }
+        .username.noor { background-color: transparent; color: #654321; padding: 0; }
+        .username.asal { background-color: transparent; color: #333; padding: 0; font-family: 'Times New Roman', Times, serif; }
+        .username.d_ll { background-color: #000; }
+
+        .username i { margin: 0 4px; font-size: 10px; vertical-align: middle; }
+        
+        .user-id { font-size: 11px; color: #999; font-family: Arial, sans-serif; margin-right: 22px; }
+        
+        .flag { width: 18px; position: absolute; top: 12px; left: 8px; }
+
+        .user-status { margin-top: 4px; font-size: 13px; color: #333; line-height: 1.3; word-wrap: break-word; }
+        
+        .user-status .english-status { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #555; direction: ltr; text-align: left; }
+
+        .status-image, .status-video { max-width: 100%; border-radius: 5px; margin-top: 6px; display: block; }
+
+    </style>
+</head>
+<body>
+
+    <button class="open-btn" onclick="toggleUserList()">فتح قائمة المتواجدين</button>
+
+    <div class="user-list-container" id="userList">
+        <div class="header">
+            <span class="close-btn" onclick="toggleUserList()">×</span>
+            <div>المتواجدون في [<span>ROOM</span>] الغرفة العامة</div>
+            <div style="width: 22px;"></div>
+        </div>
+
+        <div class="banner">
+            <div class="banner-text">
+                هذا بانر إعلاني متحرك... مرحباً بكم في دردشة عراقنا... يمكن تخصيص هذا النص...
+            </div>
+        </div>
+
+        <div class="user-list-scroll-area">
+            <ul class="user-list">
+                <!-- تم نسخ المستخدمين هنا كما في المثال السابق -->
+                <li class="user-item">
+                    <img src="https://i.imgur.com/vJ2rA6p.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username nawar"><i class="fa-regular fa-star"></i> نـــــــيـــــــؤألله - NaWaR</span>
+                            <span class="user-id">#18</span>
+                            <img src="https://flagcdn.com/w20/se.png" alt="Flag" class="flag">
+                        </div>
+                    </div>
+                </li>
+                <li class="user-item">
+                    <img src="https://i.imgur.com/bE1zOMO.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username helen"><i class="fa-solid fa-star"></i> ♚هــلــنHELEN♚</span>
+                            <span class="user-id">#74</span>
+                            <img src="https://flagcdn.com/w20/us.png" alt="Flag" class="flag">
+                        </div>
+                        <div class="user-status">الصمت... في حرم الغباء... ذكاء</div>
+                    </div>
+                </li>
+                <li class="user-item">
+                    <img src="https://i.imgur.com/nL17zH0.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username malak"><i class="fa-solid fa-star"></i> مـــــــلاك ↔ Malak-!r</span>
+                            <span class="user-id">#73</span>
+                            <img src="https://flagcdn.com/w20/iq.png" alt="Flag" class="flag">
+                        </div>
+                        <div class="user-status">
+                            ✨:لا شي مستحيل عندما يكون الله بجانبك
+                            <div class="english-status">Nothing is impossible when God🖤</div>
+                            <img src="https://i.imgur.com/3Yd8S1a.jpeg" alt="Status Image" class="status-image">
+                        </div>
+                    </div>
+                </li>
+                <li class="user-item">
+                    <img src="https://i.imgur.com/k9oB2Pz.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username noor">.. النور ∞</span>
+                            <span class="user-id">#27</span>
+                            <img src="https://flagcdn.com/w20/iq.png" alt="Flag" class="flag">
+                        </div>
+                        <div class="user-status">
+                            لو ..
+                            <video class="status-video" controls poster="https://i.imgur.com/YgY7a3g.jpeg">
+                                <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                                متصفحك لا يدعم عرض الفيديو.
+                            </video>
+                        </div>
+                    </div>
+                </li>
+                <li class="user-item">
+                    <img src="https://i.imgur.com/g8oXbLd.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username asal">♔عـسـل بــغــداد♔</span>
+                            <span class="user-id">#52</span>
+                            <img src="https://flagcdn.com/w20/iq.png" alt="Flag" class="flag">
+                        </div>
+                        <div class="user-status">كانت الحياه جميله عندما كان أبي معي</div>
+                    </div>
+                </li>
+                <li class="user-item">
+                    <img src="https://i.imgur.com/8F3A2rT.jpeg" alt="Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <div class="username-container">
+                            <span class="username d_ll">⚜دـــــــعـــــــاء⚜</span>
+                            <span class="user-id">#45</span>
+                            <img src="https://flagcdn.com/w20/us.png" alt="Flag" class="flag">
+                        </div>
+                        <div class="user-status">أذا. دعتك قدرتك على ظلم الناس .. فتذكر قدرة الله عليك</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function toggleUserList( ) {
+            const userList = document.getElementById('userList');
+            userList.classList.toggle('open');
+        }
+    </script>
+
+</body>
+</html>
