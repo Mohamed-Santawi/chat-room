@@ -3,17 +3,17 @@
   "rewrites": [
     { "source": "/", "destination": "/portal.html" },
     { "source": "/chat", "destination": "/index.html" },
-    { "source": "/rooms", "destination": "/الغرف HD.html" },
-    { "source": "/live", "destination": "/بث مباشر.html" },
-    { "source": "/alerts", "destination": "/تنبيه2.html" },
-    { "source": "/notifications", "destination": "/تنبيهات.html" },
-    { "source": "/wall", "destination": "/جدار الرائع.html" },
-    { "source": "/private", "destination": "/خاص جديد.html" },
-    { "source": "/admin", "destination": "/لوحة م جداديا.html" },
-    { "source": "/gifts", "destination": "/مبمررمnoname(42).html" },
-    { "source": "/online", "destination": "/متواجدين HD.html" },
-    { "source": "/profile", "destination": "/محدث ملف.html" },
-    { "source": "/stream", "destination": "/noname(43).html" },
+    { "source": "/rooms", "destination": "/%D8%A7%D9%84%D8%BA%D8%B1%D9%81%20HD.html" },
+    { "source": "/live", "destination": "/%D8%A8%D8%AB%20%D9%85%D8%A8%D8%A7%D8%B4%D8%B1.html" },
+    { "source": "/alerts", "destination": "/%D8%AA%D9%86%D8%A8%D9%8A%D9%872.html" },
+    { "source": "/notifications", "destination": "/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%D8%A7%D8%AA.html" },
+    { "source": "/wall", "destination": "/%D8%AC%D8%AF%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B1%D8%A7%D8%A6%D8%B9.html" },
+    { "source": "/private", "destination": "/%D8%AE%D8%A7%D8%B5%20%D8%AC%D8%AF%D9%8A%D8%AF.html" },
+    { "source": "/admin", "destination": "/%D9%84%D9%88%D8%AD%D8%A9%20%D9%85%20%D8%AC%D8%AF%D8%A7%D8%AF%D9%8A%D8%A7.html" },
+    { "source": "/gifts", "destination": "/%D9%85%D8%A8%D9%85%D8%B1%D8%B1%D9%85noname%2842%29.html" },
+    { "source": "/online", "destination": "/%D9%85%D8%AA%D9%88%D8%A7%D8%AC%D8%AF%D9%8A%D9%86%20HD.html" },
+    { "source": "/profile", "destination": "/%D9%85%D8%AD%D8%AF%D8%AB%20%D9%85%D9%84%D9%81.html" },
+    { "source": "/stream", "destination": "/noname%2843%29.html" },
     { "source": "/(.*)", "destination": "/portal.html" }
   ]
 }
