@@ -112,11 +112,13 @@
             flex-grow: 1; display: flex; align-items: center; 
             background: var(--bg-tertiary); border: 1px solid var(--bronze-border); 
             border-radius: 20px; padding: 4px 10px; transition: border-color 0.3s;
+            min-width: 0;
         }
         .input-wrapper:focus-within { border-color: var(--gold-primary); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
         .input-wrapper .input-field { 
             flex-grow: 1; padding: 8px; border: none; font-size: 0.95rem; 
             direction: rtl; text-align: right; outline: none; background: transparent; color: var(--text-body);
+            width: 100%; min-width: 0;
         }
         .input-wrapper .icon-btn { font-size: 1.3rem; color: var(--gold-primary); background: none; padding: 2px; cursor: pointer; margin-left: 5px; transition: color 0.2s; }
         .input-wrapper .icon-btn:hover { color: var(--gold-light); }
