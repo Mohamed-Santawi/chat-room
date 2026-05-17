@@ -61,67 +61,34 @@
         }
 
         .chat-message { 
-            direction: rtl; display: flex; align-items: flex-end; 
-            margin-bottom: 20px; gap: 10px; position: relative; 
+            direction: rtl; display: flex; align-items: center; 
+            margin-bottom: 12px; gap: 10px; position: relative; 
+            background: linear-gradient(135deg, #1b1612 0%, #100b08 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px; padding: 10px 15px;
+            width: 100%; box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: border-color 0.3s;
         }
+        .chat-message:hover { border-color: rgba(212, 175, 55, 0.8); }
 
         /* Avatar and VIP Glowing Rings */
-        .avatar-container {
-            position: relative;
-            width: 45px;
-            height: 45px;
-            flex-shrink: 0;
-        }
-        .avatar-img { 
-            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; 
-            border: 2px solid var(--gold-primary);
-        }
+        .avatar-container { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-primary); }
         .vip-ring {
-            position: absolute;
-            top: -4px; left: -4px; right: -4px; bottom: -4px;
-            border-radius: 50%; pointer-events: none;
-            border: 2px solid var(--gold-primary);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
-            animation: pulseGlow 2s ease-in-out infinite;
+            position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px;
+            border-radius: 50%; pointer-events: none; border: 2px solid var(--gold-primary);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); animation: pulseGlow 2s ease-in-out infinite;
         }
 
-        .message-body { max-width: 75%; display: flex; flex-direction: column; }
-        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-        .user-name { font-weight: bold; font-size: 0.9rem; color: #ffdf7a; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-        .role-badge { 
-            background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); 
-            color: var(--text-primary); font-size: 0.7rem; padding: 2px 6px; border-radius: 12px; 
-        }
-
-        /* Bubble Styling (Sender vs Receiver) */
-        .message-bubble { 
-            padding: 12px 15px; border-radius: 15px; font-size: 0.95rem; 
-            line-height: 1.5; box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
-            word-wrap: break-word; color: var(--text-body);
-        }
-        
-        .chat-message.sender { flex-direction: row-reverse; }
-        .chat-message.sender .message-body { align-items: flex-end; }
-        .chat-message.sender .message-header { flex-direction: row-reverse; }
-        .chat-message.sender .message-bubble { 
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-            border-left: 2px solid var(--gold-primary);
-            border-bottom-left-radius: 0; 
-        }
-        
-        .chat-message.receiver { flex-direction: row; }
-        .chat-message.receiver .message-body { align-items: flex-start; }
-        .chat-message.receiver .message-bubble { 
-            background: linear-gradient(135deg, #1b1612 0%, #100b08 100%);
-            border-right: 2px solid var(--text-muted);
-            border-bottom-right-radius: 0; 
-        }
+        .message-content { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex-grow: 1; padding-left: 25px; }
+        .user-name { font-weight: bold; font-size: 0.95rem; color: #ffdf7a; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .role-badge { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold-primary); color: var(--text-primary); font-size: 0.7rem; padding: 2px 6px; border-radius: 12px; }
+        .message-text { color: var(--text-body); font-size: 0.95rem; word-wrap: break-word; line-height: 1.5; margin-right: 5px; }
 
         .delete-msg-btn {
-            position: absolute; top: 50%; left: -25px; transform: translateY(-50%);
+            position: absolute; top: 50%; left: 15px; transform: translateY(-50%);
             color: #ff4d4d; cursor: pointer; font-size: 1.2rem; opacity: 0; transition: opacity 0.2s ease;
         }
-        .chat-message.sender .delete-msg-btn { right: -25px; left: auto; }
         .chat-message:hover .delete-msg-btn { opacity: 1; }
 
         .clear-chat-btn {
@@ -255,17 +222,15 @@
         </header>
 
         <main class="chat-messages" id="chat-messages">
-            <div class="chat-message receiver fade-in-element">
+            <div class="chat-message fade-in-element">
                 <div class="avatar-container">
                     <div class="vip-ring"></div>
                     <img src="https://i.imgur.com/yO4j2Mh.png" alt="Avatar" class="avatar-img">
                 </div>
-                <div class="message-body">
-                    <div class="message-header">
-                        <span class="user-name">كـ <i class="bi bi-book-fill"></i> ــتآب</span>
-                        <span class="role-badge">المراقب</span>
-                    </div>
-                    <div class="message-bubble">الكتاب الي تعرفه</div>
+                <div class="message-content">
+                    <span class="role-badge">المراقب</span>
+                    <span class="user-name">كـ <i class="bi bi-book-fill"></i> ــتآب:</span>
+                    <span class="message-text">الكتاب الي تعرفه</span>
                 </div>
                 <i class="bi bi-trash-fill delete-msg-btn" title="حذف الرسالة"></i>
             </div>
@@ -321,18 +286,16 @@
         function addMessage(text) {
             if (text.trim() === '') return;
             const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message', 'sender', 'fade-in-element');
+            messageElement.classList.add('chat-message', 'fade-in-element');
             messageElement.innerHTML = `
                 <div class="avatar-container">
                     <div class="vip-ring" style="border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.4);"></div>
                     <img src="https://i.imgur.com/L6Bq4yD.jpeg" alt="Avatar" class="avatar-img">
                 </div>
-                <div class="message-body">
-                    <div class="message-header">
-                        <span class="user-name" style="color: #00f0ff;">أنا</span>
-                        <span class="role-badge" style="border-color: #00f0ff; color: #00f0ff;">المالك</span>
-                    </div>
-                    <div class="message-bubble">${text}</div>
+                <div class="message-content">
+                    <span class="role-badge" style="border-color: #00f0ff; color: #00f0ff;">المالك</span>
+                    <span class="user-name" style="color: #00f0ff;">أنا:</span>
+                    <span class="message-text">${text}</span>
                 </div>
                 <i class="bi bi-trash-fill delete-msg-btn" title="حذف الرسالة"></i>`;
             chatMessages.appendChild(messageElement);
@@ -347,10 +310,8 @@
         // === [[ كود جديد: وظائف الحذف ]] ===
         // 1. حذف رسالة فردية
         chatMessages.addEventListener('click', function(e) {
-            // التحقق من أن العنصر الذي تم النقر عليه هو زر الحذف
             if (e.target.classList.contains('delete-msg-btn')) {
-                // الحصول على عنصر الرسالة الأب وحذفه
-                const messageToDelete = e.target.closest('.message');
+                const messageToDelete = e.target.closest('.chat-message');
                 if (messageToDelete) {
                     messageToDelete.remove();
                 }
@@ -359,10 +320,8 @@
 
         // 2. حذف المحادثة بالكامل
         clearChatButton.addEventListener('click', function() {
-            // طلب تأكيد من المستخدم قبل الحذف
             if (confirm('هل أنت متأكد أنك تريد حذف جميع الرسائل في المحادثة؟')) {
-                // حذف جميع العناصر التي هي رسائل فقط (وليس إشعارات)
-                const allMessages = chatMessages.querySelectorAll('.message');
+                const allMessages = chatMessages.querySelectorAll('.chat-message');
                 allMessages.forEach(msg => msg.remove());
             }
         });
