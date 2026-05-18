@@ -67,6 +67,10 @@ app.get('/stream', (req, res) => {
     res.sendFile(path.join(__dirname, 'noname(43).html'));
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'تسجيل الدخول1.html'));
+});
+
 // Fallback Route for Single Page Application or custom 404
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'portal.html'));
