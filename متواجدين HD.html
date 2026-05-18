@@ -8,8 +8,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap' );
 
+        :root {
+            --bg-glass: rgba(15, 18, 16, 0.75);
+            --neon-green: #00ff88;
+            --neon-gold: #ffdf7a;
+            --border-glow: rgba(0, 255, 136, 0.2);
+            --text-main: #ffffff;
+            --text-sub: #a0aab0;
+        }
+
         body {
-            background-color: #e9ebee;
+            background-color: #050806;
             font-family: 'Tajawal', sans-serif;
             margin: 0;
             overflow-x: hidden;
@@ -19,29 +28,33 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background-color: #006a4e;
-            color: white;
+            background: linear-gradient(135deg, #004d2e, #002211);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
             padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             z-index: 1001;
             font-family: 'Tajawal', sans-serif;
+            box-shadow: 0 0 10px var(--border-glow);
         }
 
         .user-list-container {
             position: fixed;
             top: 0;
             right: -100%;
-            width: 60%; /* تعديل العرض إلى 60% */
-            max-width: 360px; /* حد أقصى للحفاظ على الشكل */
-            min-width: 300px; /* حد أدنى للشاشات الصغيرة جداً */
+            width: 60%;
+            max-width: 360px;
+            min-width: 300px;
             height: 100%;
-            background-color: #ffffff;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            background-color: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.9);
+            border-left: 1px solid var(--border-glow);
             display: flex;
             flex-direction: column;
-            transition: right 0.4s ease-in-out;
+            transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 1000;
         }
 
@@ -49,44 +62,63 @@
             right: 0;
         }
 
+        /* إضاءة محيطية داخل القائمة */
+        .user-list-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 100% 50%, rgba(0, 255, 136, 0.05), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .header {
-            background-color: #006a4e;
-            color: white;
-            padding: 10px 15px; /* تقليل الحشو لجعل الهيدر مضغوطاً */
+            background: rgba(5, 10, 8, 0.8);
+            color: var(--neon-green);
+            padding: 15px;
             font-weight: bold;
-            font-size: 15px; /* تصغير الخط قليلاً */
+            font-size: 16px;
             text-align: center;
-            border-bottom: 3px solid #f0b429;
+            border-bottom: 1px solid var(--border-glow);
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
         }
         
         .header span {
             font-family: Arial, sans-serif;
+            color: var(--text-main);
+            text-shadow: none;
         }
 
         .close-btn {
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
-            font-weight: bold;
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+            transition: 0.3s;
         }
+        .close-btn:hover { color: #ff1a1a; transform: scale(1.1); }
 
         .banner {
-            background-color: #1a1a1a;
-            color: #fff;
-            padding: 6px 0; /* تقليل الحشو */
+            background: linear-gradient(90deg, rgba(0,255,136,0.05), rgba(0,0,0,0.4), rgba(0,255,136,0.05));
+            color: var(--neon-gold);
+            padding: 8px 0;
             overflow: hidden;
             white-space: nowrap;
             flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 223, 122, 0.1);
         }
 
         .banner-text {
             display: inline-block;
             padding-right: 100%;
             animation: marquee 15s linear infinite;
-            font-size: 13px; /* تصغير الخط */
+            font-size: 13px;
+            text-shadow: 0 0 5px rgba(255, 223, 122, 0.3);
         }
 
         @keyframes marquee {
@@ -97,7 +129,13 @@
         .user-list-scroll-area {
             flex-grow: 1;
             overflow-y: auto;
+            padding: 10px 0;
         }
+        
+        /* شريط التمرير (Scrollbar) المخصص */
+        .user-list-scroll-area::-webkit-scrollbar { width: 5px; }
+        .user-list-scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .user-list-scroll-area::-webkit-scrollbar-thumb { background: rgba(0, 255, 136, 0.3); border-radius: 10px; }
 
         .user-list {
             list-style: none;
@@ -108,28 +146,31 @@
         .user-item {
             display: flex;
             align-items: flex-start;
-            padding: 10px 8px; /* تقليل الحشو لجعل العناصر مضغوطة */
-            border-bottom: 1px solid #f5f5f5; /* اللون الدقيق جداً للخط الفاصل */
+            padding: 12px 10px;
+            margin: 5px 10px;
+            background: rgba(20, 25, 22, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
             position: relative;
+            transition: all 0.3s ease;
         }
         
-        .user-item::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px; /* تقليل عرض الخط الجانبي */
-            background-color: #28a745;
+        .user-item:hover {
+            background: rgba(30, 38, 33, 0.8);
+            border-color: var(--border-glow);
+            transform: translateX(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
 
         .user-avatar {
-            width: 40px; /* تصغير الصورة الشخصية */
-            height: 40px;
-            border-radius: 6px; /* تعديل الحواف */
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
             object-fit: cover;
-            margin-left: 10px;
+            margin-left: 12px;
             flex-shrink: 0;
+            border: 2px solid var(--neon-gold);
+            box-shadow: 0 0 10px rgba(255, 223, 122, 0.3);
         }
 
         .user-info {
@@ -144,38 +185,38 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            margin-bottom: 5px;
         }
 
         .username {
-            background-color: #1c1e21;
-            color: white;
-            padding: 2px 10px; /* تقليل الحشو */
-            border-radius: 15px;
-            font-size: 13px; /* تصغير الخط */
-            font-weight: 500;
+            background-color: transparent !important;
+            padding: 0 !important;
+            font-size: 14px;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
             white-space: nowrap;
         }
         
-        .username.nawar { background-color: #6c757d; font-family: cursive; }
-        .username.helen { background-color: #000; }
-        .username.malak { background-color: #000; }
-        .username.noor { background-color: transparent; color: #654321; padding: 0; }
-        .username.asal { background-color: transparent; color: #333; padding: 0; font-family: 'Times New Roman', Times, serif; }
-        .username.d_ll { background-color: #000; }
+        /* تلوين الأسماء بنمط النيون استناداً إلى الرتب القديمة */
+        .username.nawar { color: #a0aab0 !important; text-shadow: 0 0 5px #a0aab0; font-family: cursive; }
+        .username.helen { color: #ffcc00 !important; text-shadow: 0 0 8px #ffcc00; }
+        .username.malak { color: #ff99cc !important; text-shadow: 0 0 8px #ff99cc; }
+        .username.noor { color: var(--text-main) !important; text-shadow: 0 0 5px #fff; }
+        .username.asal { color: var(--neon-gold) !important; text-shadow: 0 0 5px var(--neon-gold); font-family: 'Times New Roman', Times, serif; }
+        .username.d_ll { color: #00e5ff !important; text-shadow: 0 0 8px #00e5ff; }
 
-        .username i { margin: 0 4px; font-size: 10px; vertical-align: middle; }
+        .username i { margin: 0 4px; font-size: 12px; vertical-align: middle; color: var(--neon-gold); text-shadow: 0 0 10px var(--neon-gold); }
         
-        .user-id { font-size: 11px; color: #999; font-family: Arial, sans-serif; margin-right: 22px; }
+        .user-id { font-size: 11px; color: rgba(255,255,255,0.3); font-family: Arial, sans-serif; margin-right: 15px; }
         
-        .flag { width: 18px; position: absolute; top: 12px; left: 8px; }
+        .flag { width: 18px; position: absolute; top: 15px; left: 10px; border-radius: 2px; }
 
-        .user-status { margin-top: 4px; font-size: 13px; color: #333; line-height: 1.3; word-wrap: break-word; }
+        .user-status { margin-top: 2px; font-size: 12px; color: var(--text-sub); line-height: 1.4; word-wrap: break-word; }
         
-        .user-status .english-status { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #555; direction: ltr; text-align: left; }
+        .user-status .english-status { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11px; color: #888; direction: ltr; text-align: left; }
 
-        .status-image, .status-video { max-width: 100%; border-radius: 5px; margin-top: 6px; display: block; }
+        .status-image, .status-video { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.1); }
 
     </style>
 </head>
