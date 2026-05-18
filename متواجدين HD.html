@@ -40,13 +40,11 @@
         }
 
         .user-list-container {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 60%;
-            max-width: 360px;
-            min-width: 300px;
-            height: 100%;
+            width: 70%;
+            max-width: 380px;
+            float: right;
+            margin: 0;
+            min-height: 100vh;
             background-color: var(--bg-glass);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -54,12 +52,7 @@
             border-left: 1px solid var(--border-glow);
             display: flex;
             flex-direction: column;
-            transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 1000;
-        }
-
-        .user-list-container.open {
-            right: 0;
         }
 
         /* إضاءة محيطية داخل القائمة */
@@ -82,26 +75,17 @@
             border-bottom: 1px solid var(--border-glow);
             flex-shrink: 0;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
         }
-        
+
         .header span {
             font-family: Arial, sans-serif;
             color: var(--text-main);
             text-shadow: none;
         }
-
-        .close-btn {
-            font-size: 24px;
-            cursor: pointer;
-            color: #ff4d4d;
-            text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
-            transition: 0.3s;
-        }
-        .close-btn:hover { color: #ff1a1a; transform: scale(1.1); }
 
         .banner {
             background: linear-gradient(90deg, rgba(0,255,136,0.05), rgba(0,0,0,0.4), rgba(0,255,136,0.05));
@@ -222,13 +206,9 @@
 </head>
 <body>
 
-    <button class="open-btn" onclick="toggleUserList()">فتح قائمة المتواجدين</button>
-
     <div class="user-list-container" id="userList">
         <div class="header">
-            <span class="close-btn" onclick="toggleUserList()">×</span>
             <div>المتواجدون في [<span>ROOM</span>] الغرفة العامة</div>
-            <div style="width: 22px;"></div>
         </div>
 
         <div class="banner">
@@ -319,12 +299,7 @@
         </div>
     </div>
 
-    <script>
-        function toggleUserList( ) {
-            const userList = document.getElementById('userList');
-            userList.classList.toggle('open');
-        }
-    </script>
+
 
 </body>
 </html>
