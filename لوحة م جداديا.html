@@ -51,22 +51,19 @@
 
         /* [[ تعديل ]] : حجم لوحة الملف الشخصي الرئيسية */
         .profile-panel-container {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 70%;
-            max-width: 380px;
-            height: 100%;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
             background-color: var(--panel-bg);
             backdrop-filter: blur(15px);
             border-left: 1px solid var(--gold-primary);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            border-right: 1px solid var(--gold-primary);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
             color: var(--text-color);
             z-index: 999;
             display: flex;
             flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .profile-panel-container.visible {
             transform: translateX(0);
@@ -83,25 +80,6 @@
             flex-shrink: 0;
             border-bottom: 1px solid var(--input-border);
         }
-
-        .profile-header .close-btn {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,0,0,0.2);
-            color: #ff4d4d;
-            border: 1px solid transparent;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-        .profile-header .close-btn:hover { background: #ff4d4d; color: white; box-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
 
         .profile-tabs {
             display: flex;
@@ -295,11 +273,8 @@
     </style>
 </head>
 <body>
-    <button id="open-profile-btn" style="position: fixed; top: 20px; left: 20px; z-index: 100; padding: 10px; font-size: 1rem;">فتح الملف الشخصي</button>
-
-    <div id="profile-backdrop" class="profile-backdrop"></div>
     <div id="profile-panel" class="profile-panel-container">
-        <div class="profile-header">إعدادات الحساب<button id="close-profile-btn" class="close-btn">×</button></div>
+        <div class="profile-header">إعدادات الحساب</div>
         <div class="profile-tabs">
             <button class="profile-tab active">الزخرفة</button>
             <button class="profile-tab">الملف الشخصي</button>
@@ -360,17 +335,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- التحكم في لوحة الملف الشخصي الرئيسية ---
-            const profilePanel = document.getElementById('profile-panel');
-            const profileBackdrop = document.getElementById('profile-backdrop');
-            const openProfileBtn = document.getElementById('open-profile-btn');
-            const closeProfileBtn = document.getElementById('close-profile-btn');
-            function openProfile() { profilePanel.classList.add('visible'); profileBackdrop.classList.add('visible'); }
-            function closeProfile() { profilePanel.classList.remove('visible'); profileBackdrop.classList.remove('visible'); }
-            openProfileBtn.addEventListener('click', openProfile);
-            closeProfileBtn.addEventListener('click', closeProfile);
-            profileBackdrop.addEventListener('click', closeProfile);
-
             // --- التحكم في قائمة الإضافات ---
             const extrasBtn = document.getElementById('extras-btn');
             const extrasMenu = document.getElementById('extras-menu');
